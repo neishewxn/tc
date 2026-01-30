@@ -35,7 +35,6 @@ const (
 	Http
 	Vmess
 	Vless
-	WireGuard
 	Ssh
 )
 
@@ -184,8 +183,6 @@ func (at AdapterType) String() string {
 		return "Vmess"
 	case Vless:
 		return "Vless"
-	case WireGuard:
-		return "WireGuard"
 	case Ssh:
 		return "Ssh"
 	case Relay:
