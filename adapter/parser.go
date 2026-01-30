@@ -68,13 +68,6 @@ func ParseProxy(mapping map[string]any, options ...ProxyOption) (C.Proxy, error)
 			break
 		}
 		proxy, err = outbound.NewVless(*vlessOption)
-	case "snell":
-		snellOption := &outbound.SnellOption{BasicOption: basicOption}
-		err = decoder.Decode(mapping, snellOption)
-		if err != nil {
-			break
-		}
-		proxy, err = outbound.NewSnell(*snellOption)
 	case "hysteria":
 		hyOption := &outbound.HysteriaOption{BasicOption: basicOption}
 		err = decoder.Decode(mapping, hyOption)

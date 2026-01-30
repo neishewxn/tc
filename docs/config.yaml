@@ -391,18 +391,6 @@ proxies: # socks5
     # private-key: ./client.key # 证书对应的私钥 PEM 格式，或者私钥路径
     # ip-version: dual
 
-  # Snell
-  # Beware that there's currently no UDP support yet
-  - name: "snell"
-    type: snell
-    server: server
-    port: 44046
-    psk: yourpsk
-    # version: 2
-    # obfs-opts:
-    # mode: http # or tls
-    # host: bing.com
-
   # Shadowsocks
   # cipher支持:
   #   aes-128-gcm aes-192-gcm aes-256-gcm
