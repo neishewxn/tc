@@ -317,7 +317,7 @@ func (r *Resolver) ipExchange(ctx context.Context, m *D.Msg) (msg *D.Msg, err er
 
 	msgCh := r.asyncExchange(ctx, r.main, m)
 
-	if r.fallback == nil || len(r.fallback) == 0 { // directly return if no fallback servers are available
+	if len(r.fallback) == 0 { // directly return if no fallback servers are available
 		res := <-msgCh
 		msg, err = res.Msg, res.Error
 		return
