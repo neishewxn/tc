@@ -13,7 +13,6 @@ type ShadowsocksServer struct {
 	Cipher    string
 	Udp       bool
 	MuxOption sing.MuxOption `yaml:"mux-option" json:"mux-option,omitempty"`
-	ShadowTLS ShadowTLS      `yaml:"shadow-tls" json:"shadow-tls,omitempty"`
 	KcpTun    KcpTun         `yaml:"kcp-tun" json:"kcp-tun,omitempty"`
 }
 

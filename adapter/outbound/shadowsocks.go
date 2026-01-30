@@ -13,7 +13,6 @@ import (
 	gost "github.com/metacubex/mihomo/transport/gost-plugin"
 	"github.com/metacubex/mihomo/transport/kcptun"
 	obfs "github.com/metacubex/mihomo/transport/simple-obfs"
-	shadowtls "github.com/metacubex/mihomo/transport/sing-shadowtls"
 	v2rayObfs "github.com/metacubex/mihomo/transport/v2ray-plugin"
 
 	shadowsocks "github.com/metacubex/sing-shadowsocks2"
@@ -32,7 +31,6 @@ type ShadowSocks struct {
 	obfsOption      *simpleObfsOption
 	v2rayOption     *v2rayObfs.Option
 	gostOption      *gost.Option
-	shadowTLSOption *shadowtls.ShadowTLSOption
 	kcptunClient    *kcptun.Client
 }
 
@@ -86,17 +84,6 @@ type gostObfsOption struct {
 	Mux            bool              `obfs:"mux,omitempty"`
 }
 
-type shadowTLSOption struct {
-	Password       string   `obfs:"password,omitempty"`
-	Host           string   `obfs:"host"`
-	Fingerprint    string   `obfs:"fingerprint,omitempty"`
-	Certificate    string   `obfs:"certificate,omitempty"`
-	PrivateKey     string   `obfs:"private-key,omitempty"`
-	SkipCertVerify bool     `obfs:"skip-cert-verify,omitempty"`
-	Version        int      `obfs:"version,omitempty"`
-	ALPN           []string `obfs:"alpn,omitempty"`
-}
-
 type kcpTunOption struct {
 	Key          string `obfs:"key,omitempty"`
 	Crypt        string `obfs:"crypt,omitempty"`
@@ -145,12 +132,6 @@ func (ss *ShadowSocks) StreamConnContext(ctx context.Context, c net.Conn, metada
 		if err != nil {
 			return nil, fmt.Errorf("%s connect error: %w", ss.addr, err)
 		}
-	case shadowtls.Mode:
-		c, err = shadowtls.NewShadowTLS(ctx, c, ss.shadowTLSOption)
-		if err != nil {
-			return nil, err
-		}
-		useEarly = true
 	}
 	useEarly = useEarly || N.NeedHandshake(c)
 	if !useEarly {
@@ -282,7 +263,6 @@ func NewShadowSocks(option ShadowSocksOption) (*ShadowSocks, error) {
 	var v2rayOption *v2rayObfs.Option
 	var gostOption *gost.Option
 	var obfsOption *simpleObfsOption
-	var shadowTLSOpt *shadowtls.ShadowTLSOption
 	var kcptunClient *kcptun.Client
 	obfsMode := ""
 
@@ -360,31 +340,6 @@ func NewShadowSocks(option ShadowSocksOption) (*ShadowSocks, error) {
 			}
 			gostOption.ECHConfig = echConfig
 		}
-	} else if option.Plugin == shadowtls.Mode {
-		obfsMode = shadowtls.Mode
-		opt := &shadowTLSOption{
-			Version: 2,
-		}
-		if err := decoder.Decode(option.PluginOpts, opt); err != nil {
-			return nil, fmt.Errorf("ss %s initialize shadow-tls-plugin error: %w", addr, err)
-		}
-
-		shadowTLSOpt = &shadowtls.ShadowTLSOption{
-			Password:          opt.Password,
-			Host:              opt.Host,
-			Fingerprint:       opt.Fingerprint,
-			Certificate:       opt.Certificate,
-			PrivateKey:        opt.PrivateKey,
-			ClientFingerprint: option.ClientFingerprint,
-			SkipCertVerify:    opt.SkipCertVerify,
-			Version:           opt.Version,
-		}
-
-		if opt.ALPN != nil { // structure's Decode will ensure value not nil when input has value even it was set an empty array
-			shadowTLSOpt.ALPN = opt.ALPN
-		} else {
-			shadowTLSOpt.ALPN = shadowtls.DefaultALPN
-		}
 	} else if option.Plugin == kcptun.Mode {
 		obfsMode = kcptun.Mode
 		kcptunOpt := &kcpTunOption{}
@@ -449,7 +404,6 @@ func NewShadowSocks(option ShadowSocksOption) (*ShadowSocks, error) {
 		v2rayOption:     v2rayOption,
 		gostOption:      gostOption,
 		obfsOption:      obfsOption,
-		shadowTLSOption: shadowTLSOpt,
 		kcptunClient:    kcptunClient,
 	}
 	outbound.dialer = option.NewDialer(outbound.DialOptions())
