@@ -93,26 +93,6 @@ func ParseListener(mapping map[string]any) (C.InboundListener, error) {
 			return nil, err
 		}
 		listener, err = IN.NewVless(vlessOption)
-	case "hysteria2":
-		hysteria2Option := &IN.Hysteria2Option{}
-		err = decoder.Decode(mapping, hysteria2Option)
-		if err != nil {
-			return nil, err
-		}
-		listener, err = IN.NewHysteria2(hysteria2Option)
-	case "tuic":
-		tuicOption := &IN.TuicOption{
-			MaxIdleTime:           15000,
-			AuthenticationTimeout: 1000,
-			ALPN:                  []string{"h3"},
-			MaxUdpRelayPacketSize: 1500,
-			CongestionController:  "bbr",
-		}
-		err = decoder.Decode(mapping, tuicOption)
-		if err != nil {
-			return nil, err
-		}
-		listener, err = IN.NewTuic(tuicOption)
 	default:
 		return nil, fmt.Errorf("unsupport proxy type: %s", proxyType)
 	}

@@ -38,7 +38,6 @@ const (
 	Hysteria
 	Hysteria2
 	WireGuard
-	Tuic
 	Ssh
 )
 
@@ -193,8 +192,6 @@ func (at AdapterType) String() string {
 		return "Hysteria2"
 	case WireGuard:
 		return "WireGuard"
-	case Tuic:
-		return "Tuic"
 	case Ssh:
 		return "Ssh"
 	case Relay:

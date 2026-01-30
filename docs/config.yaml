@@ -966,60 +966,6 @@ proxies: # socks5
     #   j3: <t><b 0xf6ab><c><r 10>                        # AmneziaWG v1.5 only (removed in v2)
     #   itime: 60                                         # AmneziaWG v1.5 only (removed in v2)
 
-  # tuic
-  - name: tuic
-    server: www.example.com
-    port: 10443
-    type: tuic
-    # tuicV4 必须填写 token（不可同时填写 uuid 和 password）
-    token: TOKEN
-    # tuicV5 必须填写 uuid 和 password（不可同时填写 token）
-    uuid: 00000000-0000-0000-0000-000000000001
-    password: PASSWORD_1
-    # ip: 127.0.0.1 # for overwriting the DNS lookup result of the server address set in option 'server'
-    # heartbeat-interval: 10000
-    # alpn: [h3]
-    disable-sni: true
-    reduce-rtt: true
-    request-timeout: 8000
-    udp-relay-mode: native # Available: "native", "quic". Default: "native"
-    # congestion-controller: bbr # Available: "cubic", "new_reno", "bbr". Default: "cubic"
-    # cwnd: 10 # default: 32
-    # max-udp-relay-packet-size: 1500
-    # fast-open: true
-    # skip-cert-verify: true
-    # max-open-streams: 20 # default 100, too many open streams may hurt performance
-    # sni: example.com
-    # ech-opts:
-    #   enable: true # 必须手动开启
-    #   # 如果config为空则通过dns解析，不为空则通过该值指定，格式为经过base64编码的ech参数（dig +short TYPE65 tls-ech.dev）
-    #   config: AEn+DQBFKwAgACABWIHUGj4u+PIggYXcR5JF0gYk3dCRioBW8uJq9H4mKAAIAAEAAQABAANAEnB1YmxpYy50bHMtZWNoLmRldgAA
-    #
-    # meta 和 sing-box 私有扩展，将 ss-uot 用于 udp 中继，开启此选项后 udp-relay-mode 将失效
-    # 警告，与原版 tuic 不兼容！！！
-    # udp-over-stream: false
-    # udp-over-stream-version: 1
-
-  # ShadowsocksR
-  # The supported ciphers (encryption methods): all stream ciphers in ss
-  # The supported obfses:
-  #   plain http_simple http_post
-  #   random_head tls1.2_ticket_auth tls1.2_ticket_fastauth
-  # The supported protocols:
-  #   origin auth_sha1_v4 auth_aes128_md5
-  #   auth_aes128_sha1 auth_chain_a auth_chain_b
-  - name: "ssr"
-    type: ssr
-    server: server
-    port: 443
-    cipher: chacha20-ietf
-    password: "password"
-    obfs: tls1.2_ticket_auth
-    protocol: auth_sha1_v4
-    # obfs-param: domain.tld
-    # protocol-param: "#"
-    # udp: true
-
   - name: "ssh-out"
     type: ssh
 
@@ -1054,7 +1000,7 @@ proxies: # socks5
     interface-name: en1
     routing-mark: 6667
 proxy-groups:
-  # 代理链，目前 relay 可以支持 udp 的只有 vmess/vless/trojan/ss/ssr/tuic
+  # 代理链，目前 relay 可以支持 udp 的只有 vmess/vless/trojan/ss/ssr
   # wireguard 目前不支持在 relay 中使用，请使用 proxy 中的 dialer-proxy 配置项
   # Traffic: mihomo <-> http <-> vmess <-> ss1 <-> ss2 <-> Internet
   - name: "relay"
@@ -1430,36 +1376,6 @@ listeners:
     #     bytes-per-sec: 0 # 基准速率（字节/秒）
     #     burst-bytes-per-sec: 0 # 突发速率（字节/秒），大于 bytesPerSec 时生效
 
-  - name: tuic-in-1
-    type: tuic
-    port: 10815 # 支持使用ports格式，例如200,302 or 200,204,401-429,501-503
-    listen: 0.0.0.0
-    # rule: sub-rule-name1 # 默认使用 rules，如果未找到 sub-rule 则直接使用 rules
-    # proxy: proxy # 如果不为空则直接将该入站流量交由指定 proxy 处理 (当 proxy 不为空时，这里的 proxy 名称必须合法，否则会出错)
-    # token:    # tuicV4 填写（可以同时填写 users）
-    #   - TOKEN
-    # users:    # tuicV5 填写（可以同时填写 token）
-    #   00000000-0000-0000-0000-000000000000: PASSWORD_0
-    #   00000000-0000-0000-0000-000000000001: PASSWORD_1
-    #  certificate: ./server.crt # 证书 PEM 格式，或者 证书的路径
-    #  private-key: ./server.key # 证书对应的私钥 PEM 格式，或者私钥路径
-    #  下面两项为mTLS配置项，如果client-auth-type设置为 "verify-if-given" 或 "require-and-verify" 则client-auth-cert必须不为空
-    #  client-auth-type: "" # 可选值：""、"request"、"require-any"、"verify-if-given"、"require-and-verify"
-    #  client-auth-cert: string # 证书 PEM 格式，或者 证书的路径
-    #  如果填写则开启ech（可由 mihomo generate ech-keypair <明文域名> 生成）
-    #  ech-key: |
-    #    -----BEGIN ECH KEYS-----
-    #    ACATwY30o/RKgD6hgeQxwrSiApLaCgU+HKh7B6SUrAHaDwBD/g0APwAAIAAgHjzK
-    #    madSJjYQIf9o1N5GXjkW4DEEeb17qMxHdwMdNnwADAABAAEAAQACAAEAAwAIdGVz
-    #    dC5jb20AAA==
-    #    -----END ECH KEYS-----
-    #  congestion-controller: bbr
-    #  max-idle-time: 15000
-    #  authentication-timeout: 1000
-    #  alpn:
-    #    - h3
-    #  max-udp-relay-packet-size: 1500
-
   - name: tunnel-in-1
     type: tunnel
     port: 10816 # 支持使用ports格式，例如200,302 or 200,204,401-429,501-503
@@ -1631,21 +1547,3 @@ listeners:
 # shadowsocks,vmess 入口配置（传入流量将和 socks,mixed 等入口一样按照 mode 所指定的方式进行匹配处理）
 # ss-config: ss://2022-blake3-aes-256-gcm:vlmpIPSyHH6f4S8WVPdRIHIlzmB+GIRfoH3aNJ/t9Gg=@:23456
 # vmess-config: vmess://1:9d0cb9d0-964f-4ef6-897d-6c6b3ccf9e68@:12345
-
-# tuic 服务器入口（传入流量将和 socks,mixed 等入口一样按照 mode 所指定的方式进行匹配处理）
-# tuic-server:
-#  enable: true
-#  listen: 127.0.0.1:10443
-#  token:    # tuicV4 填写（可以同时填写 users）
-#    - TOKEN
-#  users:    # tuicV5 填写（可以同时填写 token）
-#    00000000-0000-0000-0000-000000000000: PASSWORD_0
-#    00000000-0000-0000-0000-000000000001: PASSWORD_1
-#  certificate: ./server.crt
-#  private-key: ./server.key
-#  congestion-controller: bbr
-#  max-idle-time: 15000
-#  authentication-timeout: 1000
-#  alpn:
-#    - h3
-#  max-udp-relay-packet-size: 1500
