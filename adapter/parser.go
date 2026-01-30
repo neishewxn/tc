@@ -124,13 +124,6 @@ func ParseProxy(mapping map[string]any, options ...ProxyOption) (C.Proxy, error)
 			break
 		}
 		proxy, err = outbound.NewSsh(*sshOption)
-	case "anytls":
-		anytlsOption := &outbound.AnyTLSOption{BasicOption: basicOption}
-		err = decoder.Decode(mapping, anytlsOption)
-		if err != nil {
-			break
-		}
-		proxy, err = outbound.NewAnyTLS(*anytlsOption)
 	case "sudoku":
 		sudokuOption := &outbound.SudokuOption{BasicOption: basicOption}
 		err = decoder.Decode(mapping, sudokuOption)

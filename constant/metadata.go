@@ -36,7 +36,6 @@ const (
 	TUN
 	TUIC
 	HYSTERIA2
-	ANYTLS
 	SUDOKU
 	INNER
 )
@@ -105,8 +104,6 @@ func (t Type) String() string {
 		return "Tuic"
 	case HYSTERIA2:
 		return "Hysteria2"
-	case ANYTLS:
-		return "AnyTLS"
 	case SUDOKU:
 		return "Sudoku"
 	case INNER:
@@ -145,8 +142,6 @@ func ParseType(t string) (*Type, error) {
 		res = TUIC
 	case "HYSTERIA2":
 		res = HYSTERIA2
-	case "ANYTLS":
-		res = ANYTLS
 	case "SUDOKU":
 		res = SUDOKU
 	case "INNER":

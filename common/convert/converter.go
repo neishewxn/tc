@@ -514,49 +514,6 @@ func ConvertsV2Ray(buf []byte) ([]map[string]any, error) {
 			}
 
 			proxies = append(proxies, socks)
-
-		case "anytls":
-			// https://github.com/anytls/anytls-go/blob/main/docs/uri_scheme.md
-			link, err := url.Parse(line)
-			if err != nil {
-				continue
-			}
-			username := link.User.Username()
-			password, exist := link.User.Password()
-			if !exist {
-				password = username
-			}
-			query := link.Query()
-			server := link.Hostname()
-			if server == "" {
-				continue
-			}
-			portStr := link.Port()
-			if portStr == "" {
-				continue
-			}
-			insecure, sni := query.Get("insecure"), query.Get("sni")
-			insecureBool := insecure == "1"
-			fingerprint := query.Get("hpkp")
-
-			remarks := link.Fragment
-			if remarks == "" {
-				remarks = fmt.Sprintf("%s:%s", server, portStr)
-			}
-			name := uniqueName(names, remarks)
-			anytls := make(map[string]any, 10)
-			anytls["name"] = name
-			anytls["type"] = "anytls"
-			anytls["server"] = server
-			anytls["port"] = portStr
-			anytls["username"] = username
-			anytls["password"] = password
-			anytls["sni"] = sni
-			anytls["fingerprint"] = fingerprint
-			anytls["skip-cert-verify"] = insecureBool
-			anytls["udp"] = true
-
-			proxies = append(proxies, anytls)
 		}
 	}
 

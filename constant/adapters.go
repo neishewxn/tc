@@ -40,7 +40,6 @@ const (
 	WireGuard
 	Tuic
 	Ssh
-	AnyTLS
 	Sudoku
 )
 
@@ -199,8 +198,6 @@ func (at AdapterType) String() string {
 		return "Tuic"
 	case Ssh:
 		return "Ssh"
-	case AnyTLS:
-		return "AnyTLS"
 	case Sudoku:
 		return "Sudoku"
 	case Relay:
