@@ -113,13 +113,6 @@ func ParseListener(mapping map[string]any) (C.InboundListener, error) {
 			return nil, err
 		}
 		listener, err = IN.NewTuic(tuicOption)
-	case "sudoku":
-		sudokuOption := &IN.SudokuOption{}
-		err = decoder.Decode(mapping, sudokuOption)
-		if err != nil {
-			return nil, err
-		}
-		listener, err = IN.NewSudoku(sudokuOption)
 	default:
 		return nil, fmt.Errorf("unsupport proxy type: %s", proxyType)
 	}

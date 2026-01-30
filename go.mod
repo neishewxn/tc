@@ -3,7 +3,6 @@ module github.com/metacubex/mihomo
 go 1.25
 
 require (
-	filippo.io/edwards25519 v1.1.0
 	github.com/bahlo/generic-list-go v0.2.0
 	github.com/coreos/go-iptables v0.8.0
 	github.com/dlclark/regexp2 v1.11.5

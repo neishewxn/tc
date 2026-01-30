@@ -33,13 +33,6 @@ func ParseProxy(mapping map[string]any, options ...ProxyOption) (C.Proxy, error)
 			break
 		}
 		proxy, err = outbound.NewShadowSocks(*ssOption)
-	case "ssr":
-		ssrOption := &outbound.ShadowSocksROption{BasicOption: basicOption}
-		err = decoder.Decode(mapping, ssrOption)
-		if err != nil {
-			break
-		}
-		proxy, err = outbound.NewShadowSocksR(*ssrOption)
 	case "socks5":
 		socksOption := &outbound.Socks5Option{BasicOption: basicOption}
 		err = decoder.Decode(mapping, socksOption)
@@ -124,13 +117,6 @@ func ParseProxy(mapping map[string]any, options ...ProxyOption) (C.Proxy, error)
 			break
 		}
 		proxy, err = outbound.NewSsh(*sshOption)
-	case "sudoku":
-		sudokuOption := &outbound.SudokuOption{BasicOption: basicOption}
-		err = decoder.Decode(mapping, sudokuOption)
-		if err != nil {
-			break
-		}
-		proxy, err = outbound.NewSudoku(*sudokuOption)
 	default:
 		return nil, fmt.Errorf("unsupport proxy type: %s", proxyType)
 	}

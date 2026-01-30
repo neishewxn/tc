@@ -40,7 +40,6 @@ const (
 	WireGuard
 	Tuic
 	Ssh
-	Sudoku
 )
 
 const (
@@ -198,8 +197,6 @@ func (at AdapterType) String() string {
 		return "Tuic"
 	case Ssh:
 		return "Ssh"
-	case Sudoku:
-		return "Sudoku"
 	case Relay:
 		return "Relay"
 	case Selector:
