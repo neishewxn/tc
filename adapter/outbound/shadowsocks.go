@@ -12,7 +12,6 @@ import (
 	"github.com/metacubex/mihomo/ntp"
 	gost "github.com/metacubex/mihomo/transport/gost-plugin"
 	"github.com/metacubex/mihomo/transport/kcptun"
-	"github.com/metacubex/mihomo/transport/restls"
 	obfs "github.com/metacubex/mihomo/transport/simple-obfs"
 	shadowtls "github.com/metacubex/mihomo/transport/sing-shadowtls"
 	v2rayObfs "github.com/metacubex/mihomo/transport/v2ray-plugin"
@@ -34,7 +33,6 @@ type ShadowSocks struct {
 	v2rayOption     *v2rayObfs.Option
 	gostOption      *gost.Option
 	shadowTLSOption *shadowtls.ShadowTLSOption
-	restlsConfig    *restls.Config
 	kcptunClient    *kcptun.Client
 }
 
@@ -99,13 +97,6 @@ type shadowTLSOption struct {
 	ALPN           []string `obfs:"alpn,omitempty"`
 }
 
-type restlsOption struct {
-	Password     string `obfs:"password"`
-	Host         string `obfs:"host"`
-	VersionHint  string `obfs:"version-hint"`
-	RestlsScript string `obfs:"restls-script,omitempty"`
-}
-
 type kcpTunOption struct {
 	Key          string `obfs:"key,omitempty"`
 	Crypt        string `obfs:"crypt,omitempty"`
@@ -158,12 +149,6 @@ func (ss *ShadowSocks) StreamConnContext(ctx context.Context, c net.Conn, metada
 		c, err = shadowtls.NewShadowTLS(ctx, c, ss.shadowTLSOption)
 		if err != nil {
 			return nil, err
-		}
-		useEarly = true
-	case restls.Mode:
-		c, err = restls.NewRestls(ctx, c, ss.restlsConfig)
-		if err != nil {
-			return nil, fmt.Errorf("%s (restls) connect error: %w", ss.addr, err)
 		}
 		useEarly = true
 	}
@@ -298,7 +283,6 @@ func NewShadowSocks(option ShadowSocksOption) (*ShadowSocks, error) {
 	var gostOption *gost.Option
 	var obfsOption *simpleObfsOption
 	var shadowTLSOpt *shadowtls.ShadowTLSOption
-	var restlsConfig *restls.Config
 	var kcptunClient *kcptun.Client
 	obfsMode := ""
 
@@ -401,18 +385,6 @@ func NewShadowSocks(option ShadowSocksOption) (*ShadowSocks, error) {
 		} else {
 			shadowTLSOpt.ALPN = shadowtls.DefaultALPN
 		}
-	} else if option.Plugin == restls.Mode {
-		obfsMode = restls.Mode
-		restlsOpt := &restlsOption{}
-		if err := decoder.Decode(option.PluginOpts, restlsOpt); err != nil {
-			return nil, fmt.Errorf("ss %s initialize restls-plugin error: %w", addr, err)
-		}
-
-		restlsConfig, err = restls.NewRestlsConfig(restlsOpt.Host, restlsOpt.Password, restlsOpt.VersionHint, restlsOpt.RestlsScript, option.ClientFingerprint)
-		if err != nil {
-			return nil, fmt.Errorf("ss %s initialize restls-plugin error: %w", addr, err)
-		}
-
 	} else if option.Plugin == kcptun.Mode {
 		obfsMode = kcptun.Mode
 		kcptunOpt := &kcpTunOption{}
@@ -478,7 +450,6 @@ func NewShadowSocks(option ShadowSocksOption) (*ShadowSocks, error) {
 		gostOption:      gostOption,
 		obfsOption:      obfsOption,
 		shadowTLSOption: shadowTLSOpt,
-		restlsConfig:    restlsConfig,
 		kcptunClient:    kcptunClient,
 	}
 	outbound.dialer = option.NewDialer(outbound.DialOptions())
