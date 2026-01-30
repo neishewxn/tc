@@ -35,8 +35,6 @@ const (
 	Http
 	Vmess
 	Vless
-	Hysteria
-	Hysteria2
 	WireGuard
 	Ssh
 )
@@ -186,10 +184,6 @@ func (at AdapterType) String() string {
 		return "Vmess"
 	case Vless:
 		return "Vless"
-	case Hysteria:
-		return "Hysteria"
-	case Hysteria2:
-		return "Hysteria2"
 	case WireGuard:
 		return "WireGuard"
 	case Ssh:

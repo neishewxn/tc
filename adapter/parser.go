@@ -61,13 +61,6 @@ func ParseProxy(mapping map[string]any, options ...ProxyOption) (C.Proxy, error)
 			break
 		}
 		proxy, err = outbound.NewVless(*vlessOption)
-	case "hysteria":
-		hyOption := &outbound.HysteriaOption{BasicOption: basicOption}
-		err = decoder.Decode(mapping, hyOption)
-		if err != nil {
-			break
-		}
-		proxy, err = outbound.NewHysteria(*hyOption)
 	case "wireguard":
 		wgOption := &outbound.WireGuardOption{BasicOption: basicOption}
 		err = decoder.Decode(mapping, wgOption)

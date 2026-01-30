@@ -34,7 +34,6 @@ const (
 	TPROXY
 	TUNNEL
 	TUN
-	HYSTERIA2
 	INNER
 )
 
@@ -98,8 +97,6 @@ func (t Type) String() string {
 		return "Tunnel"
 	case TUN:
 		return "Tun"
-	case HYSTERIA2:
-		return "Hysteria2"
 	case INNER:
 		return "Inner"
 	default:
@@ -132,8 +129,6 @@ func ParseType(t string) (*Type, error) {
 		res = TUNNEL
 	case "TUN":
 		res = TUN
-	case "HYSTERIA2":
-		res = HYSTERIA2
 	case "INNER":
 		res = INNER
 	default:

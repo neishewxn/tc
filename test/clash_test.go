@@ -34,7 +34,6 @@ const (
 	ImageVmessLatest     = "sagernet/v2fly-core:latest"
 	ImageVless           = "teddysun/xray:latest"
 	ImageXray            = "teddysun/xray:latest"
-	ImageHysteria        = "tobyxdd/hysteria:latest"
 )
 
 var (
@@ -99,7 +98,6 @@ func init() {
 		ImageVmess,
 		ImageVless,
 		ImageXray,
-		ImageHysteria,
 	}
 
 	for _, image := range images {
