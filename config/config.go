@@ -1218,12 +1218,6 @@ func parseNameServer(servers []string, respectRules bool, preferH3 bool) ([]dns.
 	return nameservers, nil
 }
 
-func init() {
-	dns.ParseNameServer = func(servers []string) ([]dns.NameServer, error) { // using by wireguard
-		return parseNameServer(servers, false, false)
-	}
-}
-
 func parsePureDNSServer(server string) string {
 	addPre := func(server string) string {
 		return "udp://" + server
