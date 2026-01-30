@@ -146,63 +146,6 @@ func ConvertsV2Ray(buf []byte) ([]map[string]any, error) {
 
 			proxies = append(proxies, tuic)
 
-		case "trojan":
-			urlTrojan, err := url.Parse(line)
-			if err != nil {
-				continue
-			}
-
-			query := urlTrojan.Query()
-
-			name := uniqueName(names, urlTrojan.Fragment)
-			trojan := make(map[string]any, 20)
-
-			trojan["name"] = name
-			trojan["type"] = scheme
-			trojan["server"] = urlTrojan.Hostname()
-			trojan["port"] = urlTrojan.Port()
-			trojan["password"] = urlTrojan.User.Username()
-			trojan["udp"] = true
-			trojan["skip-cert-verify"], _ = strconv.ParseBool(query.Get("allowInsecure"))
-
-			if sni := query.Get("sni"); sni != "" {
-				trojan["sni"] = sni
-			}
-			if alpn := query.Get("alpn"); alpn != "" {
-				trojan["alpn"] = strings.Split(alpn, ",")
-			}
-
-			network := strings.ToLower(query.Get("type"))
-			if network != "" {
-				trojan["network"] = network
-			}
-
-			switch network {
-			case "ws":
-				headers := make(map[string]any)
-				wsOpts := make(map[string]any)
-
-				headers["User-Agent"] = RandUserAgent()
-
-				wsOpts["path"] = query.Get("path")
-				wsOpts["headers"] = headers
-
-				trojan["ws-opts"] = wsOpts
-
-			case "grpc":
-				grpcOpts := make(map[string]any)
-				grpcOpts["grpc-service-name"] = query.Get("serviceName")
-				trojan["grpc-opts"] = grpcOpts
-			}
-
-			if fingerprint := query.Get("fp"); fingerprint == "" {
-				trojan["client-fingerprint"] = "chrome"
-			} else {
-				trojan["client-fingerprint"] = fingerprint
-			}
-
-			proxies = append(proxies, trojan)
-
 		case "vless":
 			urlVLess, err := url.Parse(line)
 			if err != nil {

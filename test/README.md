@@ -23,9 +23,6 @@
   - [x] Websocket
   - [x] Websocket TLS
   - [x] gRPC
-- [x] Trojan
-  - [x] Normal
-  - [x] gRPC
 - [x] Snell
   - [x] Normal
   - [x] ObfsHTTP
