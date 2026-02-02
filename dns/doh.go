@@ -9,7 +9,6 @@ import (
 	"net"
 	"net/url"
 	"runtime"
-	"strconv"
 	"sync"
 	"time"
 
@@ -18,11 +17,8 @@ import (
 	"github.com/metacubex/mihomo/log"
 
 	"github.com/metacubex/http"
-	"github.com/metacubex/quic-go"
-	"github.com/metacubex/quic-go/http3"
 	"github.com/metacubex/tls"
 	D "github.com/miekg/dns"
-	"golang.org/x/exp/slices"
 )
 
 // Values to configure HTTP and HTTP/2 transport.
@@ -45,6 +41,7 @@ const (
 	// at the same time.
 	dohMaxIdleConns = 2
 	maxElapsedTime  = time.Second * 30
+	DefaultTimeout  = time.Second * 5
 )
 
 var DefaultHTTPVersions = []C.HTTPVersion{C.HTTPVersion11, C.HTTPVersion2}
@@ -57,11 +54,6 @@ type dnsOverHTTPS struct {
 	// needed. Clients are safe for concurrent use by multiple goroutines.
 	client   *http.Client
 	clientMu sync.Mutex
-
-	// quicConfig is the QUIC configuration that is used if HTTP/3 is enabled
-	// for this upstream.
-	quicConfig      *quic.Config
-	quicConfigGuard sync.Mutex
 
 	url            *url.URL
 	httpVersions   []C.HTTPVersion
@@ -86,13 +78,9 @@ func newDoHClient(urlString string, r *Resolver, preferH3 bool, params map[strin
 	}
 
 	doh := &dnsOverHTTPS{
-		url:    u,
-		addr:   u.String(),
-		dialer: newDNSDialer(r, proxyAdapter, proxyName),
-		quicConfig: &quic.Config{
-			KeepAlivePeriod: QUICKeepAlivePeriod,
-			TokenStore:      newQUICTokenStore(),
-		},
+		url:          u,
+		addr:         u.String(),
+		dialer:       newDNSDialer(r, proxyAdapter, proxyName),
 		httpVersions: httpVersions,
 	}
 
@@ -191,9 +179,9 @@ func (doh *dnsOverHTTPS) ResetConnection() {
 func (doh *dnsOverHTTPS) closeClient(client *http.Client) (err error) {
 	client.CloseIdleConnections()
 
-	if isHTTP3(client) { // HTTP/3 may leak due to keep-alive connections.
-		return client.Transport.(io.Closer).Close()
-	}
+	// if isHTTP3(client) { // HTTP/3 may leak due to keep-alive connections.
+	// 	return client.Transport.(io.Closer).Close()
+	// }
 
 	return nil
 }
@@ -209,10 +197,10 @@ func (doh *dnsOverHTTPS) exchangeHTTPS(ctx context.Context, client *http.Client,
 	// It appears, that GET requests are more memory-efficient with Golang
 	// implementation of HTTP/2.
 	method := http.MethodGet
-	if isHTTP3(client) {
-		// If we're using HTTP/3, use http3.MethodGet0RTT to force using 0-RTT.
-		method = http3.MethodGet0RTT
-	}
+	// if isHTTP3(client) {
+	// 	// If we're using HTTP/3, use http3.MethodGet0RTT to force using 0-RTT.
+	// 	method = http3.MethodGet0RTT
+	// }
 
 	requestUrl := *doh.url // don't modify origin url
 	requestUrl.RawQuery = fmt.Sprintf("dns=%s", base64.RawURLEncoding.EncodeToString(buf))
@@ -279,10 +267,6 @@ func (doh *dnsOverHTTPS) shouldRetry(err error) (ok bool) {
 		return true
 	}
 
-	if isQUICRetryError(err) {
-		return true
-	}
-
 	return false
 }
 
@@ -292,11 +276,6 @@ func (doh *dnsOverHTTPS) shouldRetry(err error) (ok bool) {
 func (doh *dnsOverHTTPS) resetClient(ctx context.Context, resetErr error) (client *http.Client, err error) {
 	doh.clientMu.Lock()
 	defer doh.clientMu.Unlock()
-
-	if errors.Is(resetErr, quic.Err0RTTRejected) {
-		// Reset the TokenStore only if 0-RTT was rejected.
-		doh.resetQUICConfig()
-	}
 
 	oldClient := doh.client
 	if oldClient != nil {
@@ -310,25 +289,6 @@ func (doh *dnsOverHTTPS) resetClient(ctx context.Context, resetErr error) (clien
 	doh.client, err = doh.createClient(ctx)
 
 	return doh.client, err
-}
-
-// getQUICConfig returns the QUIC config in a thread-safe manner.  Note, that
-// this method returns a pointer, it is forbidden to change its properties.
-func (doh *dnsOverHTTPS) getQUICConfig() (c *quic.Config) {
-	doh.quicConfigGuard.Lock()
-	defer doh.quicConfigGuard.Unlock()
-
-	return doh.quicConfig
-}
-
-// resetQUICConfig Re-create the token store to make sure we're not trying to
-// use invalid for 0-RTT.
-func (doh *dnsOverHTTPS) resetQUICConfig() {
-	doh.quicConfigGuard.Lock()
-	defer doh.quicConfigGuard.Unlock()
-
-	doh.quicConfig = doh.quicConfig.Clone()
-	doh.quicConfig.TokenStore = newQUICTokenStore()
 }
 
 // getClient gets or lazily initializes an HTTP client (and transport) that will
@@ -412,17 +372,6 @@ func (doh *dnsOverHTTPS) createTransport(ctx context.Context) (t http.RoundTripp
 	tlsConfig.NextProtos = nextProtos
 	transport.TLSClientConfig = tlsConfig
 
-	if slices.Contains(doh.httpVersions, C.HTTPVersion3) {
-		// First, we attempt to create an HTTP3 transport.  If the probe QUIC
-		// connection is established successfully, we'll be using HTTP3 for this
-		// upstream.
-		transportH3, err := doh.createTransportH3(ctx, tlsConfig)
-		if err == nil {
-			log.Debugln("[%s] using HTTP/3 for this upstream: QUIC was faster", doh.url.String())
-			return transportH3, nil
-		}
-	}
-
 	log.Debugln("[%s] using HTTP/2 for this upstream: %v", doh.url.String(), err)
 
 	if !doh.supportsHTTP() {
@@ -449,208 +398,187 @@ func (doh *dnsOverHTTPS) createTransport(ctx context.Context) (t http.RoundTripp
 	return transport, nil
 }
 
-// http3Transport is a wrapper over *http3.Transport that tries to optimize
-// its behavior.  The main thing that it does is trying to force use a single
-// connection to a host instead of creating a new one all the time.  It also
-// helps mitigate race issues with quic-go.
-type http3Transport struct {
-	baseTransport *http3.Transport
+// // http3Transport is a wrapper over *http3.Transport that tries to optimize
+// // its behavior.  The main thing that it does is trying to force use a single
+// // connection to a host instead of creating a new one all the time.  It also
+// // helps mitigate race issues with quic-go.
+// type http3Transport struct {
+// 	baseTransport *http3.Transport
 
-	closed bool
-	mu     sync.RWMutex
-}
+// 	closed bool
+// 	mu     sync.RWMutex
+// }
 
-// type check
-var _ http.RoundTripper = (*http3Transport)(nil)
+// // type check
+// var _ http.RoundTripper = (*http3Transport)(nil)
 
-// RoundTrip implements the http.RoundTripper interface for *http3Transport.
-func (h *http3Transport) RoundTrip(req *http.Request) (resp *http.Response, err error) {
-	h.mu.RLock()
-	defer h.mu.RUnlock()
+// // RoundTrip implements the http.RoundTripper interface for *http3Transport.
+// func (h *http3Transport) RoundTrip(req *http.Request) (resp *http.Response, err error) {
+// 	h.mu.RLock()
+// 	defer h.mu.RUnlock()
 
-	if h.closed {
-		return nil, net.ErrClosed
-	}
+// 	if h.closed {
+// 		return nil, net.ErrClosed
+// 	}
 
-	// Try to use cached connection to the target host if it's available.
-	resp, err = h.baseTransport.RoundTripOpt(req, http3.RoundTripOpt{OnlyCachedConn: true})
+// 	// Try to use cached connection to the target host if it's available.
+// 	resp, err = h.baseTransport.RoundTripOpt(req, http3.RoundTripOpt{OnlyCachedConn: true})
 
-	if errors.Is(err, http3.ErrNoCachedConn) {
-		// If there are no cached connection, trigger creating a new one.
-		resp, err = h.baseTransport.RoundTrip(req)
-	}
+// 	if errors.Is(err, http3.ErrNoCachedConn) {
+// 		// If there are no cached connection, trigger creating a new one.
+// 		resp, err = h.baseTransport.RoundTrip(req)
+// 	}
 
-	return resp, err
-}
+// 	return resp, err
+// }
 
-// type check
-var _ io.Closer = (*http3Transport)(nil)
+// // type check
+// var _ io.Closer = (*http3Transport)(nil)
 
-// Close implements the io.Closer interface for *http3Transport.
-func (h *http3Transport) Close() (err error) {
-	h.mu.Lock()
-	defer h.mu.Unlock()
+// // Close implements the io.Closer interface for *http3Transport.
+// func (h *http3Transport) Close() (err error) {
+// 	h.mu.Lock()
+// 	defer h.mu.Unlock()
 
-	h.closed = true
+// 	h.closed = true
 
-	return h.baseTransport.Close()
-}
+// 	return h.baseTransport.Close()
+// }
 
-func (h *http3Transport) CloseIdleConnections() {
-	h.mu.RLock()
-	defer h.mu.RUnlock()
+// func (h *http3Transport) CloseIdleConnections() {
+// 	h.mu.RLock()
+// 	defer h.mu.RUnlock()
 
-	h.baseTransport.CloseIdleConnections()
-}
+// 	h.baseTransport.CloseIdleConnections()
+// }
 
-// createTransportH3 tries to create an HTTP/3 transport for this upstream.
-// We should be able to fall back to H1/H2 in case if HTTP/3 is unavailable or
-// if it is too slow.  In order to do that, this method will run two probes
-// in parallel (one for TLS, the other one for QUIC) and if QUIC is faster it
-// will create the *http3.Transport instance.
-func (doh *dnsOverHTTPS) createTransportH3(
-	ctx context.Context,
-	tlsConfig *tls.Config,
-) (roundTripper http.RoundTripper, err error) {
-	if !doh.supportsH3() {
-		return nil, errors.New("HTTP3 support is not enabled")
-	}
+// // createTransportH3 tries to create an HTTP/3 transport for this upstream.
+// // We should be able to fall back to H1/H2 in case if HTTP/3 is unavailable or
+// // if it is too slow.  In order to do that, this method will run two probes
+// // in parallel (one for TLS, the other one for QUIC) and if QUIC is faster it
+// // will create the *http3.Transport instance.
+// func (doh *dnsOverHTTPS) createTransportH3(
+// 	ctx context.Context,
+// 	tlsConfig *tls.Config,
+// ) (roundTripper http.RoundTripper, err error) {
+// 	if !doh.supportsH3() {
+// 		return nil, errors.New("HTTP3 support is not enabled")
+// 	}
 
-	addr, err := doh.probeH3(ctx, tlsConfig)
-	if err != nil {
-		return nil, err
-	}
+// 	addr, err := doh.probeH3(ctx, tlsConfig)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	rt := &http3.Transport{
-		Dial: func(
-			ctx context.Context,
+// 	rt := &http3.Transport{
+// 		Dial: func(
+// 			ctx context.Context,
 
-			// Ignore the address and always connect to the one that we got
-			// from the bootstrapper.
-			_ string,
-			tlsCfg *tls.Config,
-			cfg *quic.Config,
-		) (c *quic.Conn, err error) {
-			return doh.dialQuic(ctx, addr, tlsCfg, cfg)
-		},
-		DisableCompression: true,
-		TLSClientConfig:    tlsConfig,
-		QUICConfig:         doh.getQUICConfig(),
-	}
+// 			// Ignore the address and always connect to the one that we got
+// 			// from the bootstrapper.
+// 			_ string,
+// 			tlsCfg *tls.Config,
+// 			cfg *quic.Config,
+// 		) (c *quic.Conn, err error) {
+// 			return doh.dialQuic(ctx, addr, tlsCfg, cfg)
+// 		},
+// 		DisableCompression: true,
+// 		TLSClientConfig:    tlsConfig,
+// 	}
 
-	return &http3Transport{baseTransport: rt}, nil
-}
+// 	return &http3Transport{baseTransport: rt}, nil
+// }
 
-func (doh *dnsOverHTTPS) dialQuic(ctx context.Context, addr string, tlsCfg *tls.Config, cfg *quic.Config) (*quic.Conn, error) {
-	ip, port, err := net.SplitHostPort(addr)
-	if err != nil {
-		return nil, err
-	}
-	portInt, err := strconv.Atoi(port)
-	if err != nil {
-		return nil, err
-	}
-	udpAddr := net.UDPAddr{
-		IP:   net.ParseIP(ip),
-		Port: portInt,
-	}
-	conn, err := doh.dialer.ListenPacket(ctx, "udp", addr)
-	if err != nil {
-		return nil, err
-	}
-	transport := quic.Transport{Conn: conn}
-	transport.SetCreatedConn(true) // auto close conn
-	transport.SetSingleUse(true)   // auto close transport
-	tlsCfg = tlsCfg.Clone()
-	if host, _, err := net.SplitHostPort(doh.url.Host); err == nil {
-		tlsCfg.ServerName = host
-	} else {
-		// It's ok if net.SplitHostPort returns an error - it could be a hostname/IP address without a port.
-		tlsCfg.ServerName = doh.url.Host
-	}
-	return transport.DialEarly(ctx, &udpAddr, tlsCfg, cfg)
-}
+// func (doh *dnsOverHTTPS) dialQuic(ctx context.Context, addr string, tlsCfg *tls.Config, cfg *quic.Config) (*quic.Conn, error) {
+// 	ip, port, err := net.SplitHostPort(addr)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	portInt, err := strconv.Atoi(port)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	udpAddr := net.UDPAddr{
+// 		IP:   net.ParseIP(ip),
+// 		Port: portInt,
+// 	}
+// 	conn, err := doh.dialer.ListenPacket(ctx, "udp", addr)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	transport := quic.Transport{Conn: conn}
+// 	transport.SetCreatedConn(true) // auto close conn
+// 	transport.SetSingleUse(true)   // auto close transport
+// 	tlsCfg = tlsCfg.Clone()
+// 	if host, _, err := net.SplitHostPort(doh.url.Host); err == nil {
+// 		tlsCfg.ServerName = host
+// 	} else {
+// 		// It's ok if net.SplitHostPort returns an error - it could be a hostname/IP address without a port.
+// 		tlsCfg.ServerName = doh.url.Host
+// 	}
+// 	return transport.DialEarly(ctx, &udpAddr, tlsCfg, cfg)
+// }
 
-// probeH3 runs a test to check whether QUIC is faster than TLS for this
-// upstream.  If the test is successful it will return the address that we
-// should use to establish the QUIC connections.
-func (doh *dnsOverHTTPS) probeH3(
-	ctx context.Context,
-	tlsConfig *tls.Config,
-) (addr string, err error) {
-	// We're using bootstrapped address instead of what's passed to the function
-	// it does not create an actual connection, but it helps us determine
-	// what IP is actually reachable (when there are v4/v6 addresses).
-	rawConn, err := doh.dialer.DialContext(ctx, "udp", doh.url.Host)
-	if err != nil {
-		return "", fmt.Errorf("failed to dial: %w", err)
-	}
-	addr = rawConn.RemoteAddr().String()
-	// It's never actually used.
-	_ = rawConn.Close()
+// // probeH3 runs a test to check whether QUIC is faster than TLS for this
+// // upstream.  If the test is successful it will return the address that we
+// // should use to establish the QUIC connections.
+// func (doh *dnsOverHTTPS) probeH3(
+// 	ctx context.Context,
+// 	tlsConfig *tls.Config,
+// ) (addr string, err error) {
+// 	// We're using bootstrapped address instead of what's passed to the function
+// 	// it does not create an actual connection, but it helps us determine
+// 	// what IP is actually reachable (when there are v4/v6 addresses).
+// 	rawConn, err := doh.dialer.DialContext(ctx, "udp", doh.url.Host)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to dial: %w", err)
+// 	}
+// 	addr = rawConn.RemoteAddr().String()
+// 	// It's never actually used.
+// 	_ = rawConn.Close()
 
-	// Avoid spending time on probing if this upstream only supports HTTP/3.
-	if doh.supportsH3() && !doh.supportsHTTP() {
-		return addr, nil
-	}
+// 	// Avoid spending time on probing if this upstream only supports HTTP/3.
+// 	if doh.supportsH3() && !doh.supportsHTTP() {
+// 		return addr, nil
+// 	}
 
-	// Use a new *tls.Config with empty session cache for probe connections.
-	// Surprisingly, this is really important since otherwise it invalidates
-	// the existing cache.
-	// TODO(ameshkov): figure out why the sessions cache invalidates here.
-	probeTLSCfg := tlsConfig.Clone()
-	probeTLSCfg.ClientSessionCache = nil
+// 	// Use a new *tls.Config with empty session cache for probe connections.
+// 	// Surprisingly, this is really important since otherwise it invalidates
+// 	// the existing cache.
+// 	// TODO(ameshkov): figure out why the sessions cache invalidates here.
+// 	probeTLSCfg := tlsConfig.Clone()
+// 	probeTLSCfg.ClientSessionCache = nil
 
-	// Do not expose probe connections to the callbacks that are passed to
-	// the bootstrap options to avoid side-effects.
-	// TODO(ameshkov): consider exposing, somehow mark that this is a probe.
-	probeTLSCfg.VerifyPeerCertificate = nil
-	probeTLSCfg.VerifyConnection = nil
+// 	// Do not expose probe connections to the callbacks that are passed to
+// 	// the bootstrap options to avoid side-effects.
+// 	// TODO(ameshkov): consider exposing, somehow mark that this is a probe.
+// 	probeTLSCfg.VerifyPeerCertificate = nil
+// 	probeTLSCfg.VerifyConnection = nil
 
-	// Run probeQUIC and probeTLS in parallel and see which one is faster.
-	chQuic := make(chan error, 1)
-	chTLS := make(chan error, 1)
-	go doh.probeQUIC(ctx, addr, probeTLSCfg, chQuic)
-	go doh.probeTLS(ctx, probeTLSCfg, chTLS)
+// 	// Run probeQUIC and probeTLS in parallel and see which one is faster.
+// 	chQuic := make(chan error, 1)
+// 	chTLS := make(chan error, 1)
+// 	go doh.probeTLS(ctx, probeTLSCfg, chTLS)
 
-	select {
-	case quicErr := <-chQuic:
-		if quicErr != nil {
-			// QUIC failed, return error since HTTP3 was not preferred.
-			return "", quicErr
-		}
+// 	select {
+// 	case quicErr := <-chQuic:
+// 		if quicErr != nil {
+// 			// QUIC failed, return error since HTTP3 was not preferred.
+// 			return "", quicErr
+// 		}
 
-		// Return immediately, QUIC was faster.
-		return addr, quicErr
-	case tlsErr := <-chTLS:
-		if tlsErr != nil {
-			// Return immediately, TLS failed.
-			log.Debugln("probing TLS: %v", tlsErr)
-			return addr, nil
-		}
+// 		// Return immediately, QUIC was faster.
+// 		return addr, quicErr
+// 	case tlsErr := <-chTLS:
+// 		if tlsErr != nil {
+// 			// Return immediately, TLS failed.
+// 			log.Debugln("probing TLS: %v", tlsErr)
+// 			return addr, nil
+// 		}
 
-		return "", errors.New("TLS was faster than QUIC, prefer it")
-	}
-}
-
-// probeQUIC attempts to establish a QUIC connection to the specified address.
-// We run probeQUIC and probeTLS in parallel and see which one is faster.
-func (doh *dnsOverHTTPS) probeQUIC(ctx context.Context, addr string, tlsConfig *tls.Config, ch chan error) {
-	startTime := time.Now()
-	conn, err := doh.dialQuic(ctx, addr, tlsConfig, doh.getQUICConfig())
-	if err != nil {
-		ch <- fmt.Errorf("opening QUIC connection to %s: %w", doh.Address(), err)
-		return
-	}
-
-	// Ignore the error since there's no way we can use it for anything useful.
-	_ = conn.CloseWithError(QUICCodeNoError, "")
-
-	ch <- nil
-
-	elapsed := time.Since(startTime)
-	log.Debugln("elapsed on establishing a QUIC connection: %s", elapsed)
-}
+// 		return "", errors.New("TLS was faster than QUIC, prefer it")
+// 	}
+// }
 
 // probeTLS attempts to establish a TLS connection to the specified address. We
 // run probeQUIC and probeTLS in parallel and see which one is faster.
@@ -704,12 +632,12 @@ func (doh *dnsOverHTTPS) supportedHTTPVersions() (v []C.HTTPVersion) {
 	return v
 }
 
-// isHTTP3 checks if the *http.Client is an HTTP/3 client.
-func isHTTP3(client *http.Client) (ok bool) {
-	_, ok = client.Transport.(*http3Transport)
+// // isHTTP3 checks if the *http.Client is an HTTP/3 client.
+// func isHTTP3(client *http.Client) (ok bool) {
+// 	_, ok = client.Transport.(*http3Transport)
 
-	return ok
-}
+// 	return ok
+// }
 
 // tlsDial is basically the same as tls.DialWithDialer, but we will call our own
 // dialContext function to get connection.
