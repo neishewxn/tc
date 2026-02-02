@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	C "github.com/metacubex/mihomo/constant"
@@ -15,10 +16,10 @@ type InUser struct {
 }
 
 func (u *InUser) Match(metadata *C.Metadata, helper C.RuleMatchHelper) (bool, string) {
-	for _, user := range u.users {
-		if metadata.InUser == user {
-			return true, u.adapter
-		}
+	if ok := slices.ContainsFunc(u.users, func(user string) bool {
+		return metadata.InUser == user
+	}); ok {
+		return true, u.adapter
 	}
 	return false, ""
 }
@@ -38,8 +39,7 @@ func (u *InUser) Payload() string {
 func NewInUser(iUsers, adapter string) (*InUser, error) {
 	users := strings.Split(iUsers, "/")
 	for i, user := range users {
-		user = strings.TrimSpace(user)
-		if len(user) == 0 {
+		if strings.TrimSpace(user) == "" {
 			return nil, fmt.Errorf("in user couldn't be empty")
 		}
 		users[i] = user

@@ -7,6 +7,7 @@ import (
 	"net/netip"
 	"net/url"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 	_ "unsafe"
@@ -39,7 +40,6 @@ import (
 	T "github.com/metacubex/mihomo/tunnel"
 
 	orderedmap "github.com/wk8/go-ordered-map/v2"
-	"golang.org/x/exp/slices"
 )
 
 // General config
