@@ -33,7 +33,6 @@ import (
 	"github.com/metacubex/sing/common/ranges"
 
 	"go4.org/netipx"
-	"golang.org/x/exp/maps"
 )
 
 var InterfaceName = "Meta"
@@ -543,7 +542,10 @@ func (l *Listener) updateRule(ruleProvider P.RuleProvider, exclude bool, update 
 			} else {
 				delete(l.routeAddressMap, name)
 			}
-			l.routeAddressSet = maps.Values(l.routeAddressMap)
+			l.routeAddressSet = make([]*netipx.IPSet, 0, len(l.routeAddressMap))
+			for _, address := range l.routeAddressMap {
+				l.routeAddressSet = append(l.routeAddressSet, address)
+			}
 		} else {
 			ipCidr := rp.ToIpCidr()
 			if ipCidr != nil {
@@ -551,7 +553,10 @@ func (l *Listener) updateRule(ruleProvider P.RuleProvider, exclude bool, update 
 			} else {
 				delete(l.routeExcludeAddressMap, name)
 			}
-			l.routeExcludeAddressSet = maps.Values(l.routeExcludeAddressMap)
+			l.routeExcludeAddressSet = make([]*netipx.IPSet, 0, len(l.routeExcludeAddressMap))
+			for _, address := range l.routeExcludeAddressMap {
+				l.routeExcludeAddressSet = append(l.routeExcludeAddressSet, address)
+			}
 		}
 	default:
 		return

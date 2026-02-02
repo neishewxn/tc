@@ -15,11 +15,8 @@ func (r unsafeRandReader) Read(p []byte) (n int, err error) {
 	for len(p) > 0 {
 		v ^= 0xa0761d6478bd642f
 		v *= 0xe7037ed1a0b428db
-		size := 8
-		if len(p) < 8 {
-			size = len(p)
-		}
-		for i := 0; i < size; i++ {
+		size := min(len(p), 8)
+		for i := range size {
 			p[i] ^= byte(v >> (8 * i))
 		}
 		p = p[size:]

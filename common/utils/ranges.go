@@ -28,7 +28,7 @@ func newIntRanges[T constraints.Integer](expected string, parseFn func(string) (
 		return nil, fmt.Errorf("%w, too many ranges to use, maximum support 28 ranges", errIntRanges)
 	}
 
-	return newIntRangesFromList[T](list, parseFn)
+	return newIntRangesFromList(list, parseFn)
 }
 
 func newIntRangesFromList[T constraints.Integer](list []string, parseFn func(string) (T, error)) (IntRanges[T], error) {
