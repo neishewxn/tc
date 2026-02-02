@@ -5,8 +5,6 @@ import (
 	"strings"
 
 	C "github.com/metacubex/mihomo/constant"
-
-	"golang.org/x/exp/slices"
 )
 
 var (
@@ -25,11 +23,14 @@ type Base struct {
 func (b *Base) ProviderNames() []string { return nil }
 
 func ParseParams(params []string) (isSrc bool, noResolve bool) {
-	isSrc = slices.Contains(params, Src)
-	if isSrc {
-		noResolve = true
-	} else {
-		noResolve = slices.Contains(params, NoResolve)
+	for _, param := range params {
+		switch param {
+		case Src:
+			return true, true
+		case NoResolve:
+			noResolve = true
+			return
+		}
 	}
 	return
 }
