@@ -708,7 +708,7 @@ func shouldStopRetry(err error) bool {
 
 func retry[T any](ctx context.Context, ft func(context.Context) (T, error), fe func(err error)) (t T, err error) {
 	s := slowdown.New()
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		t, err = ft(ctx)
 		if err != nil {
 			if fe != nil {

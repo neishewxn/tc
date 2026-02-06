@@ -129,11 +129,11 @@ func dialContext(ctx context.Context, network string, destination netip.Addr, po
 	address = net.JoinHostPort(destination.String(), port)
 
 	netDialer := opt.netDialer
-	switch netDialer.(type) {
+	switch nd := netDialer.(type) {
 	case nil:
 		netDialer = &net.Dialer{}
 	case *net.Dialer:
-		_netDialer := *netDialer.(*net.Dialer)
+		_netDialer := *nd
 		netDialer = &_netDialer // make a copy
 	default:
 		return netDialer.DialContext(ctx, network, address)
@@ -330,7 +330,7 @@ func parallelDialContext(ctx context.Context, network string, ips []netip.Addr, 
 		go racer(ctx, ip)
 	}
 	var errs []error
-	for i := 0; i < len(ips); i++ {
+	for range ips {
 		res := <-results
 		if res.error == nil {
 			return res.Conn, nil
