@@ -6,7 +6,6 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/metacubex/mihomo/common/convert"
 	N "github.com/metacubex/mihomo/common/net"
 	"github.com/metacubex/mihomo/common/utils"
 	"github.com/metacubex/mihomo/component/ca"
@@ -18,7 +17,6 @@ import (
 	"github.com/metacubex/mihomo/transport/vless/encryption"
 	"github.com/metacubex/mihomo/transport/vmess"
 
-	"github.com/metacubex/http"
 	vmessSing "github.com/metacubex/sing-vmess"
 	"github.com/metacubex/sing-vmess/packetaddr"
 	M "github.com/metacubex/sing/common/metadata"
@@ -61,7 +59,6 @@ type VlessOption struct {
 	HTTPOpts          HTTPOptions       `proxy:"http-opts,omitempty"`
 	HTTP2Opts         HTTP2Options      `proxy:"h2-opts,omitempty"`
 	GrpcOpts          GrpcOptions       `proxy:"grpc-opts,omitempty"`
-	WSOpts            WSOptions         `proxy:"ws-opts,omitempty"`
 	WSHeaders         map[string]string `proxy:"ws-headers,omitempty"`
 	SkipCertVerify    bool              `proxy:"skip-cert-verify,omitempty"`
 	Fingerprint       string            `proxy:"fingerprint,omitempty"`
@@ -73,55 +70,6 @@ type VlessOption struct {
 
 func (v *Vless) StreamConnContext(ctx context.Context, c net.Conn, metadata *C.Metadata) (_ net.Conn, err error) {
 	switch v.option.Network {
-	case "ws":
-		host, port, _ := net.SplitHostPort(v.addr)
-		wsOpts := &vmess.WebsocketConfig{
-			Host:                     host,
-			Port:                     port,
-			Path:                     v.option.WSOpts.Path,
-			MaxEarlyData:             v.option.WSOpts.MaxEarlyData,
-			EarlyDataHeaderName:      v.option.WSOpts.EarlyDataHeaderName,
-			V2rayHttpUpgrade:         v.option.WSOpts.V2rayHttpUpgrade,
-			V2rayHttpUpgradeFastOpen: v.option.WSOpts.V2rayHttpUpgradeFastOpen,
-			ClientFingerprint:        v.option.ClientFingerprint,
-			ECHConfig:                v.echConfig,
-			Headers:                  http.Header{},
-		}
-
-		if len(v.option.WSOpts.Headers) != 0 {
-			for key, value := range v.option.WSOpts.Headers {
-				wsOpts.Headers.Add(key, value)
-			}
-		}
-		if v.option.TLS {
-			wsOpts.TLS = true
-			wsOpts.TLSConfig, err = ca.GetTLSConfig(ca.Option{
-				TLSConfig: &tls.Config{
-					MinVersion:         tls.VersionTLS12,
-					ServerName:         host,
-					InsecureSkipVerify: v.option.SkipCertVerify,
-					NextProtos:         []string{"http/1.1"},
-				},
-				Fingerprint: v.option.Fingerprint,
-				Certificate: v.option.Certificate,
-				PrivateKey:  v.option.PrivateKey,
-			})
-			if err != nil {
-				return nil, err
-			}
-
-			if v.option.ServerName != "" {
-				wsOpts.TLSConfig.ServerName = v.option.ServerName
-			} else if host := wsOpts.Headers.Get("Host"); host != "" {
-				wsOpts.TLSConfig.ServerName = host
-			}
-		} else {
-			if host := wsOpts.Headers.Get("Host"); host == "" {
-				wsOpts.Headers.Set("Host", convert.RandHost())
-				convert.SetUserAgent(wsOpts.Headers)
-			}
-		}
-		c, err = vmess.StreamWebsocketConn(ctx, c, wsOpts)
 	case "http":
 		// readability first, so just copy default TLS logic
 		c, err = v.streamTLSConn(ctx, c, false)

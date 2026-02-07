@@ -60,7 +60,6 @@ func NewVmess(options *VmessOption) (*Vmess, error) {
 			Enable:          true,
 			Listen:          base.RawAddress(),
 			Users:           users,
-			WsPath:          options.WsPath,
 			GrpcServiceName: options.GrpcServiceName,
 			Certificate:     options.Certificate,
 			PrivateKey:      options.PrivateKey,

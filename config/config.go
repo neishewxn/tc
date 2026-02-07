@@ -1273,8 +1273,7 @@ func parseNameServerPolicy(nsPolicy *orderedmap.OrderedMap[string, any], rulePro
 					policy = append(policy, dns.Policy{Domain: newKey, NameServers: nameservers})
 				}
 			} else {
-				subkeys := strings.Split(k, ",")
-				for _, subkey := range subkeys {
+				for subkey := range strings.SplitSeq(k, ",") {
 					policy = append(policy, dns.Policy{Domain: subkey, NameServers: nameservers})
 				}
 			}
