@@ -142,8 +142,6 @@ func GetGeneral() *config.General {
 			TProxyPort:        ports.TProxyPort,
 			MixedPort:         ports.MixedPort,
 			Tun:               listener.GetTunConf(),
-			// ShadowSocksConfig: ports.ShadowSocksConfig,
-			// VmessConfig:       ports.VmessConfig,
 			Authentication:    authenticator,
 			SkipAuthPrefixes:  inbound.SkipAuthPrefixes(),
 			LanAllowedIPs:     inbound.AllowedIPs(),
