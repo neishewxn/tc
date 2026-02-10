@@ -16,6 +16,7 @@ import (
 	"github.com/metacubex/mihomo/listener/sing"
 	"github.com/metacubex/mihomo/ntp"
 	"github.com/metacubex/mihomo/transport/gun"
+	mihomoVMess "github.com/metacubex/mihomo/transport/vmess"
 
 	"github.com/metacubex/http"
 	vmess "github.com/metacubex/sing-vmess"
@@ -119,6 +120,19 @@ func New(config LC.VmessServer, tunnel C.Tunnel, additions ...inbound.Addition) 
 		if err != nil {
 			return nil, err
 		}
+	}
+	if config.WsPath != "" {
+		httpMux := http.NewServeMux()
+		httpMux.HandleFunc(config.WsPath, func(w http.ResponseWriter, r *http.Request) {
+			conn, err := mihomoVMess.StreamUpgradedWebsocketConn(w, r)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
+			sl.HandleConn(conn, tunnel, additions...)
+		})
+		httpServer.Handler = httpMux
+		tlsConfig.NextProtos = append(tlsConfig.NextProtos, "http/1.1")
 	}
 	if config.GrpcServiceName != "" {
 		httpServer.Handler = gun.NewServerHandler(gun.ServerOption{

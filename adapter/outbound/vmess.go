@@ -19,6 +19,7 @@ import (
 	"github.com/metacubex/mihomo/transport/gun"
 	mihomoVMess "github.com/metacubex/mihomo/transport/vmess"
 
+	"github.com/metacubex/http"
 	vmess "github.com/metacubex/sing-vmess"
 	"github.com/metacubex/sing-vmess/packetaddr"
 	M "github.com/metacubex/sing/common/metadata"
@@ -63,6 +64,7 @@ type VmessOption struct {
 	HTTPOpts            HTTPOptions    `proxy:"http-opts,omitempty"`
 	HTTP2Opts           HTTP2Options   `proxy:"h2-opts,omitempty"`
 	GrpcOpts            GrpcOptions    `proxy:"grpc-opts,omitempty"`
+	WSOpts              WSOptions      `proxy:"ws-opts,omitempty"`
 	PacketAddr          bool           `proxy:"packet-addr,omitempty"`
 	XUDP                bool           `proxy:"xudp,omitempty"`
 	PacketEncoding      string         `proxy:"packet-encoding,omitempty"`
@@ -87,9 +89,62 @@ type GrpcOptions struct {
 	GrpcUserAgent   string `proxy:"grpc-user-agent,omitempty"`
 }
 
+type WSOptions struct {
+	Path                     string            `proxy:"path,omitempty"`
+	Headers                  map[string]string `proxy:"headers,omitempty"`
+	MaxEarlyData             int               `proxy:"max-early-data,omitempty"`
+	EarlyDataHeaderName      string            `proxy:"early-data-header-name,omitempty"`
+	V2rayHttpUpgrade         bool              `proxy:"v2ray-http-upgrade,omitempty"`
+	V2rayHttpUpgradeFastOpen bool              `proxy:"v2ray-http-upgrade-fast-open,omitempty"`
+}
+
 // StreamConnContext implements C.ProxyAdapter
 func (v *Vmess) StreamConnContext(ctx context.Context, c net.Conn, metadata *C.Metadata) (_ net.Conn, err error) {
 	switch v.option.Network {
+	case "ws":
+		host, port, _ := net.SplitHostPort(v.addr)
+		wsOpts := &mihomoVMess.WebsocketConfig{
+			Host:                     host,
+			Port:                     port,
+			Path:                     v.option.WSOpts.Path,
+			MaxEarlyData:             v.option.WSOpts.MaxEarlyData,
+			EarlyDataHeaderName:      v.option.WSOpts.EarlyDataHeaderName,
+			V2rayHttpUpgrade:         v.option.WSOpts.V2rayHttpUpgrade,
+			V2rayHttpUpgradeFastOpen: v.option.WSOpts.V2rayHttpUpgradeFastOpen,
+			ClientFingerprint:        v.option.ClientFingerprint,
+			ECHConfig:                v.echConfig,
+			Headers:                  http.Header{},
+		}
+
+		if len(v.option.WSOpts.Headers) != 0 {
+			for key, value := range v.option.WSOpts.Headers {
+				wsOpts.Headers.Add(key, value)
+			}
+		}
+
+		if v.option.TLS {
+			wsOpts.TLS = true
+			wsOpts.TLSConfig, err = ca.GetTLSConfig(ca.Option{
+				TLSConfig: &tls.Config{
+					ServerName:         host,
+					InsecureSkipVerify: v.option.SkipCertVerify,
+					NextProtos:         []string{"http/1.1"},
+				},
+				Fingerprint: v.option.Fingerprint,
+				Certificate: v.option.Certificate,
+				PrivateKey:  v.option.PrivateKey,
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			if v.option.ServerName != "" {
+				wsOpts.TLSConfig.ServerName = v.option.ServerName
+			} else if host := wsOpts.Headers.Get("Host"); host != "" {
+				wsOpts.TLSConfig.ServerName = host
+			}
+		}
+		c, err = mihomoVMess.StreamWebsocketConn(ctx, c, wsOpts)
 	case "http":
 		// readability first, so just copy default TLS logic
 		if v.option.TLS {

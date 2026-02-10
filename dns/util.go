@@ -95,6 +95,8 @@ func transform(servers []NameServer, resolver *Resolver) []dnsClient {
 	for _, s := range servers {
 		var c dnsClient
 		switch s.Net {
+		case "tls":
+			c = newDoTClient(s.Addr, resolver, s.Params, s.ProxyAdapter, s.ProxyName)
 		case "https":
 			c = newDoHClient(s.Addr, resolver, s.PreferH3, s.Params, s.ProxyAdapter, s.ProxyName)
 		case "dhcp":
@@ -103,6 +105,8 @@ func transform(servers []NameServer, resolver *Resolver) []dnsClient {
 			c = newSystemClient()
 		case "rcode":
 			c = newRCodeClient(s.Addr)
+		case "quic":
+			c = newDoQ(s.Addr, resolver, s.Params, s.ProxyAdapter, s.ProxyName)
 		default:
 			c = newClient(s.Addr, resolver, s.Net, s.Params, s.ProxyAdapter, s.ProxyName)
 		}

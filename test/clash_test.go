@@ -33,7 +33,11 @@ const (
 	ImageVmess           = "v2fly/v2fly-core:v4.45.2"
 	ImageVmessLatest     = "sagernet/v2fly-core:latest"
 	ImageVless           = "teddysun/xray:latest"
+	ImageTrojan          = "trojangfw/trojan:latest"
+	ImageTrojanGo        = "p4gefau1t/trojan-go:latest"
+	ImageSnell           = "ghcr.io/icpz/snell-server:latest"
 	ImageXray            = "teddysun/xray:latest"
+	ImageHysteria        = "tobyxdd/hysteria:latest"
 )
 
 var (
@@ -97,7 +101,11 @@ func init() {
 		ImageShadowsocksRust,
 		ImageVmess,
 		ImageVless,
+		ImageTrojan,
+		ImageTrojanGo,
+		ImageSnell,
 		ImageXray,
+		ImageHysteria,
 	}
 
 	for _, image := range images {

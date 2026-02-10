@@ -21,7 +21,7 @@
 ## Features
 
 - Local HTTP/HTTPS/SOCKS server with authentication support
-- VMess, VLESS, Shadowsocks protocol support
+- VMess, VLESS, Shadowsocks, Trojan, Snell, TUIC, Hysteria protocol support
 - Built-in DNS server that aims to minimize DNS pollution attack impact, supports DoH/DoT upstream and fake IP.
 - Rules based off domains, GEOIP, IPCIDR or Process to forward packets to different nodes
 - Remote groups allow users to implement powerful rules. Supports automatic fallback, load balancing or auto select node
@@ -91,6 +91,7 @@ API.
 - [SagerNet/sing-box](https://github.com/SagerNet/sing-box)
 - [riobard/go-shadowsocks2](https://github.com/riobard/go-shadowsocks2)
 - [v2ray/v2ray-core](https://github.com/v2ray/v2ray-core)
+- [WireGuard/wireguard-go](https://github.com/WireGuard/wireguard-go)
 - [yaling888/clash-plus-pro](https://github.com/yaling888/clash)
 
 ## License

@@ -181,6 +181,19 @@ func TestInboundVless_Encryption(t *testing.T) {
 							testInboundVless(t, inboundOptions, outboundOptions)
 						})
 					})
+					t.Run("ws", func(t *testing.T) {
+						inboundOptions := inboundOptions
+						inboundOptions.WsPath = "/ws"
+						outboundOptions := outboundOptions
+						outboundOptions.Network = "ws"
+						outboundOptions.WSOpts = outbound.WSOptions{Path: "/ws"}
+						testInboundVless(t, inboundOptions, outboundOptions)
+						t.Run("xtls-rprx-vision", func(t *testing.T) {
+							outboundOptions := outboundOptions
+							outboundOptions.Flow = "xtls-rprx-vision"
+							testInboundVless(t, inboundOptions, outboundOptions)
+						})
+					})
 					t.Run("grpc", func(t *testing.T) {
 						inboundOptions := inboundOptions
 						inboundOptions.GrpcServiceName = "GunService"
@@ -205,11 +218,13 @@ func TestInboundVless_Wss1(t *testing.T) {
 	inboundOptions := inbound.VlessOption{
 		Certificate: tlsCertificate,
 		PrivateKey:  tlsPrivateKey,
+		WsPath:      "/ws",
 	}
 	outboundOptions := outbound.VlessOption{
 		TLS:         true,
 		Fingerprint: tlsFingerprint,
 		Network:     "ws",
+		WSOpts:      outbound.WSOptions{Path: "/ws"},
 	}
 	testInboundVlessTLS(t, inboundOptions, outboundOptions, false)
 }
@@ -218,12 +233,14 @@ func TestInboundVless_Wss2(t *testing.T) {
 	inboundOptions := inbound.VlessOption{
 		Certificate:     tlsCertificate,
 		PrivateKey:      tlsPrivateKey,
+		WsPath:          "/ws",
 		GrpcServiceName: "GunService",
 	}
 	outboundOptions := outbound.VlessOption{
 		TLS:         true,
 		Fingerprint: tlsFingerprint,
 		Network:     "ws",
+		WSOpts:      outbound.WSOptions{Path: "/ws"},
 	}
 	testInboundVlessTLS(t, inboundOptions, outboundOptions, false)
 }
@@ -247,6 +264,7 @@ func TestInboundVless_Grpc2(t *testing.T) {
 	inboundOptions := inbound.VlessOption{
 		Certificate:     tlsCertificate,
 		PrivateKey:      tlsPrivateKey,
+		WsPath:          "/ws",
 		GrpcServiceName: "GunService",
 	}
 	outboundOptions := outbound.VlessOption{

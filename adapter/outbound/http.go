@@ -2,12 +2,10 @@ package outbound
 
 import (
 	"bufio"
-	"bytes"
 	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"maps"
 	"net"
 	"strconv"
 
@@ -93,16 +91,16 @@ func (h *Http) shakeHandContext(ctx context.Context, c net.Conn, metadata *C.Met
 	}
 
 	addr := metadata.RemoteAddress()
-	var hs bytes.Buffer
-	hs.WriteString("CONNECT ")
-	hs.WriteString(addr)
-	hs.WriteString(" HTTP/1.1\r\n")
+	HeaderString := "CONNECT " + addr + " HTTP/1.1\r\n"
 	tempHeaders := map[string]string{
 		"Host":             addr,
 		"User-Agent":       "Go-http-client/1.1",
 		"Proxy-Connection": "Keep-Alive",
 	}
-	maps.Copy(tempHeaders, h.option.Headers)
+
+	for key, value := range h.option.Headers {
+		tempHeaders[key] = value
+	}
 
 	if h.user != "" && h.pass != "" {
 		auth := h.user + ":" + h.pass
@@ -110,11 +108,12 @@ func (h *Http) shakeHandContext(ctx context.Context, c net.Conn, metadata *C.Met
 	}
 
 	for key, value := range tempHeaders {
-		hs.WriteString(key + ": " + value + "\r\n")
+		HeaderString += key + ": " + value + "\r\n"
 	}
-	hs.WriteString("\r\n")
 
-	_, err = c.Write(hs.Bytes())
+	HeaderString += "\r\n"
+
+	_, err = c.Write([]byte(HeaderString))
 
 	if err != nil {
 		return err

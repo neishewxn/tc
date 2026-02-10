@@ -22,7 +22,9 @@ type ShadowSocks struct {
 	*Base
 	method shadowsocks.Method
 
-	option       *ShadowSocksOption
+	option *ShadowSocksOption
+	// obfs
+	obfsMode     string
 	kcptunClient *kcptun.Client
 }
 
@@ -199,9 +201,11 @@ func NewShadowSocks(option ShadowSocksOption) (*ShadowSocks, error) {
 	}
 
 	var kcptunClient *kcptun.Client
+	obfsMode := ""
 
 	decoder := structure.NewDecoder(structure.Option{TagName: "obfs", WeaklyTypedInput: true})
 	if option.Plugin == kcptun.Mode {
+		obfsMode = kcptun.Mode
 		kcptunOpt := &kcpTunOption{}
 		if err := decoder.Decode(option.PluginOpts, kcptunOpt); err != nil {
 			return nil, fmt.Errorf("ss %s initialize kcptun-plugin error: %w", addr, err)
@@ -260,6 +264,7 @@ func NewShadowSocks(option ShadowSocksOption) (*ShadowSocks, error) {
 		method: method,
 
 		option:       &option,
+		obfsMode:     obfsMode,
 		kcptunClient: kcptunClient,
 	}
 	outbound.dialer = option.NewDialer(outbound.DialOptions())

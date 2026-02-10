@@ -38,7 +38,8 @@ func (u *InType) Payload() string {
 func NewInType(iTypes, adapter string) (*InType, error) {
 	types := strings.Split(iTypes, "/")
 	for i, tp := range types {
-		if strings.TrimSpace(tp) == "" {
+		tp = strings.TrimSpace(tp)
+		if len(tp) == 0 {
 			return nil, fmt.Errorf("in type couldn't be empty")
 		}
 		types[i] = tp

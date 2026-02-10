@@ -208,20 +208,6 @@ func Proxies() map[string]C.Proxy {
 	return proxies
 }
 
-func ProxiesWithProviders() map[string]C.Proxy {
-	allProxies := make(map[string]C.Proxy)
-	for name, proxy := range proxies {
-		allProxies[name] = proxy
-	}
-	for _, p := range providers {
-		for _, proxy := range p.Proxies() {
-			name := proxy.Name()
-			allProxies[name] = proxy
-		}
-	}
-	return allProxies
-}
-
 // Providers return all compatible providers
 func Providers() map[string]P.ProxyProvider {
 	return providers
@@ -708,7 +694,7 @@ func shouldStopRetry(err error) bool {
 
 func retry[T any](ctx context.Context, ft func(context.Context) (T, error), fe func(err error)) (t T, err error) {
 	s := slowdown.New()
-	for range 10 {
+	for i := 0; i < 10; i++ {
 		t, err = ft(ctx)
 		if err != nil {
 			if fe != nil {

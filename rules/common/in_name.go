@@ -38,7 +38,8 @@ func (u *InName) Payload() string {
 func NewInName(iNames, adapter string) (*InName, error) {
 	names := strings.Split(iNames, "/")
 	for i, name := range names {
-		if strings.TrimSpace(name) == "" {
+		name = strings.TrimSpace(name)
+		if len(name) == 0 {
 			return nil, fmt.Errorf("in name couldn't be empty")
 		}
 		names[i] = name

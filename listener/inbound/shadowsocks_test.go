@@ -20,7 +20,7 @@ import (
 
 var noneList = []string{shadowsocks.MethodNone}
 var shadowsocksCipherLists = [][]string{noneList, shadowaead.List, shadowaead_2022.List, shadowstream.List}
-var shadowsocksCipherShortLists = [][]string{noneList, shadowaead.List[:5]} // for test kcptun
+var shadowsocksCipherShortLists = [][]string{noneList, shadowaead.List[:5]} // for test shadowTLS and kcptun
 var shadowsocksPassword32 string
 var shadowsocksPassword16 string
 
@@ -100,6 +100,19 @@ func TestInboundShadowSocks_Basic(t *testing.T) {
 	inboundOptions := inbound.ShadowSocksOption{}
 	outboundOptions := outbound.ShadowSocksOption{}
 	testInboundShadowSocks(t, inboundOptions, outboundOptions, shadowsocksCipherLists, true)
+}
+
+func testInboundShadowSocksShadowTls(t *testing.T, inboundOptions inbound.ShadowSocksOption, outboundOptions outbound.ShadowSocksOption) {
+	t.Parallel()
+	t.Run("Conn", func(t *testing.T) {
+		inboundOptions, outboundOptions := inboundOptions, outboundOptions // don't modify outside options value
+		testInboundShadowSocks(t, inboundOptions, outboundOptions, shadowsocksCipherShortLists, true)
+	})
+	t.Run("UConn", func(t *testing.T) {
+		inboundOptions, outboundOptions := inboundOptions, outboundOptions // don't modify outside options value
+		outboundOptions.ClientFingerprint = "chrome"
+		testInboundShadowSocks(t, inboundOptions, outboundOptions, shadowsocksCipherShortLists, true)
+	})
 }
 
 func TestInboundShadowSocks_KcpTun(t *testing.T) {

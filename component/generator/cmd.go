@@ -57,6 +57,11 @@ func Main(args []string) {
 		fmt.Println("Seed: " + seedBase64)
 		fmt.Println("Client: " + clientBase64)
 		fmt.Println("Hash32: " + hash32Base64)
+		fmt.Println("-----------------------")
+		fmt.Println("      Lazy-Config      ")
+		fmt.Println("-----------------------")
+		fmt.Printf("[Server] decryption: \"mlkem768x25519plus.native.600s.%s\"\n", seedBase64)
+		fmt.Printf("[Client] encryption: \"mlkem768x25519plus.native.0rtt.%s\"\n", clientBase64)
 	case "vless-x25519":
 		var privateKey string
 		if len(args) > 1 {
@@ -69,5 +74,10 @@ func Main(args []string) {
 		fmt.Println("PrivateKey: " + privateKeyBase64)
 		fmt.Println("Password: " + passwordBase64)
 		fmt.Println("Hash32: " + hash32Base64)
+		fmt.Println("-----------------------")
+		fmt.Println("      Lazy-Config      ")
+		fmt.Println("-----------------------")
+		fmt.Printf("[Server] decryption: \"mlkem768x25519plus.native.600s.%s\"\n", privateKeyBase64)
+		fmt.Printf("[Client] encryption: \"mlkem768x25519plus.native.0rtt.%s\"\n", passwordBase64)
 	}
 }

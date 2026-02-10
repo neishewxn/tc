@@ -1,14 +1,15 @@
 package utils
 
-import "cmp"
+import (
+	"golang.org/x/exp/constraints"
+)
 
-
-type Range[T  cmp.Ordered] struct {
+type Range[T constraints.Ordered] struct {
 	start T
 	end   T
 }
 
-func NewRange[T cmp.Ordered](start, end T) Range[T] {
+func NewRange[T constraints.Ordered](start, end T) Range[T] {
 	if start > end {
 		return Range[T]{
 			start: end,

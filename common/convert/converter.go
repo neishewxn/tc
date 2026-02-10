@@ -34,6 +34,179 @@ func ConvertsV2Ray(buf []byte) ([]map[string]any, error) {
 
 		scheme = strings.ToLower(scheme)
 		switch scheme {
+		case "hysteria":
+			urlHysteria, err := url.Parse(line)
+			if err != nil {
+				continue
+			}
+
+			query := urlHysteria.Query()
+			name := uniqueName(names, urlHysteria.Fragment)
+			hysteria := make(map[string]any, 20)
+
+			hysteria["name"] = name
+			hysteria["type"] = scheme
+			hysteria["server"] = urlHysteria.Hostname()
+			hysteria["port"] = urlHysteria.Port()
+			hysteria["sni"] = query.Get("peer")
+			hysteria["obfs"] = query.Get("obfs")
+			if alpn := query.Get("alpn"); alpn != "" {
+				hysteria["alpn"] = strings.Split(alpn, ",")
+			}
+			hysteria["auth_str"] = query.Get("auth")
+			hysteria["protocol"] = query.Get("protocol")
+			up := query.Get("up")
+			down := query.Get("down")
+			if up == "" {
+				up = query.Get("upmbps")
+			}
+			if down == "" {
+				down = query.Get("downmbps")
+			}
+			hysteria["down"] = down
+			hysteria["up"] = up
+			hysteria["skip-cert-verify"], _ = strconv.ParseBool(query.Get("insecure"))
+
+			proxies = append(proxies, hysteria)
+
+		case "hysteria2", "hy2":
+			urlHysteria2, err := url.Parse(line)
+			if err != nil {
+				continue
+			}
+
+			query := urlHysteria2.Query()
+			name := uniqueName(names, urlHysteria2.Fragment)
+			hysteria2 := make(map[string]any, 20)
+
+			hysteria2["name"] = name
+			hysteria2["type"] = "hysteria2"
+			hysteria2["server"] = urlHysteria2.Hostname()
+			if port := urlHysteria2.Port(); port != "" {
+				hysteria2["port"] = port
+			} else {
+				hysteria2["port"] = "443"
+			}
+			hysteria2["obfs"] = query.Get("obfs")
+			hysteria2["obfs-password"] = query.Get("obfs-password")
+			hysteria2["sni"] = query.Get("sni")
+			hysteria2["skip-cert-verify"], _ = strconv.ParseBool(query.Get("insecure"))
+			if alpn := query.Get("alpn"); alpn != "" {
+				hysteria2["alpn"] = strings.Split(alpn, ",")
+			}
+			if auth := urlHysteria2.User.String(); auth != "" {
+				hysteria2["password"] = auth
+			}
+			hysteria2["fingerprint"] = query.Get("pinSHA256")
+			hysteria2["down"] = query.Get("down")
+			hysteria2["up"] = query.Get("up")
+
+			proxies = append(proxies, hysteria2)
+
+		case "tuic":
+			// A temporary unofficial TUIC share link standard
+			// Modified from https://github.com/daeuniverse/dae/discussions/182
+			// Changes:
+			//   1. Support TUICv4, just replace uuid:password with token
+			//   2. Remove `allow_insecure` field
+			urlTUIC, err := url.Parse(line)
+			if err != nil {
+				continue
+			}
+			query := urlTUIC.Query()
+
+			tuic := make(map[string]any, 20)
+			tuic["name"] = uniqueName(names, urlTUIC.Fragment)
+			tuic["type"] = scheme
+			tuic["server"] = urlTUIC.Hostname()
+			tuic["port"] = urlTUIC.Port()
+			tuic["udp"] = true
+			password, v5 := urlTUIC.User.Password()
+			if v5 {
+				tuic["uuid"] = urlTUIC.User.Username()
+				tuic["password"] = password
+			} else {
+				tuic["token"] = urlTUIC.User.Username()
+			}
+			if cc := query.Get("congestion_control"); cc != "" {
+				tuic["congestion-controller"] = cc
+			}
+			if alpn := query.Get("alpn"); alpn != "" {
+				tuic["alpn"] = strings.Split(alpn, ",")
+			}
+			if sni := query.Get("sni"); sni != "" {
+				tuic["sni"] = sni
+			}
+			if query.Get("disable_sni") == "1" {
+				tuic["disable-sni"] = true
+			}
+			if udpRelayMode := query.Get("udp_relay_mode"); udpRelayMode != "" {
+				tuic["udp-relay-mode"] = udpRelayMode
+			}
+
+			proxies = append(proxies, tuic)
+
+		case "trojan":
+			urlTrojan, err := url.Parse(line)
+			if err != nil {
+				continue
+			}
+
+			query := urlTrojan.Query()
+
+			name := uniqueName(names, urlTrojan.Fragment)
+			trojan := make(map[string]any, 20)
+
+			trojan["name"] = name
+			trojan["type"] = scheme
+			trojan["server"] = urlTrojan.Hostname()
+			trojan["port"] = urlTrojan.Port()
+			trojan["password"] = urlTrojan.User.Username()
+			trojan["udp"] = true
+			trojan["skip-cert-verify"], _ = strconv.ParseBool(query.Get("allowInsecure"))
+
+			if sni := query.Get("sni"); sni != "" {
+				trojan["sni"] = sni
+			}
+			if alpn := query.Get("alpn"); alpn != "" {
+				trojan["alpn"] = strings.Split(alpn, ",")
+			}
+
+			network := strings.ToLower(query.Get("type"))
+			if network != "" {
+				trojan["network"] = network
+			}
+
+			switch network {
+			case "ws":
+				headers := make(map[string]any)
+				wsOpts := make(map[string]any)
+
+				headers["User-Agent"] = RandUserAgent()
+
+				wsOpts["path"] = query.Get("path")
+				wsOpts["headers"] = headers
+
+				trojan["ws-opts"] = wsOpts
+
+			case "grpc":
+				grpcOpts := make(map[string]any)
+				grpcOpts["grpc-service-name"] = query.Get("serviceName")
+				trojan["grpc-opts"] = grpcOpts
+			}
+
+			if fingerprint := query.Get("fp"); fingerprint == "" {
+				trojan["client-fingerprint"] = "chrome"
+			} else {
+				trojan["client-fingerprint"] = fingerprint
+			}
+
+			if pcs := query.Get("pcs"); pcs != "" {
+				trojan["fingerprint"] = pcs
+			}
+
+			proxies = append(proxies, trojan)
+
 		case "vless":
 			urlVLess, err := url.Parse(line)
 			if err != nil {
@@ -292,6 +465,65 @@ func ConvertsV2Ray(buf []byte) ([]map[string]any, error) {
 
 			proxies = append(proxies, ss)
 
+		case "ssr":
+			dcBuf, err := TryDecodeBase64(body)
+			if err != nil {
+				continue
+			}
+
+			// ssr://host:port:protocol:method:obfs:urlsafebase64pass/?obfsparam=urlsafebase64param&protoparam=urlsafebase64param&remarks=urlsafebase64remarks&group=urlsafebase64group&udpport=0&uot=1
+
+			before, after, ok := strings.Cut(string(dcBuf), "/?")
+			if !ok {
+				continue
+			}
+
+			beforeArr := strings.Split(before, ":")
+
+			if len(beforeArr) != 6 {
+				continue
+			}
+
+			host := beforeArr[0]
+			port := beforeArr[1]
+			protocol := beforeArr[2]
+			method := beforeArr[3]
+			obfs := beforeArr[4]
+			password := decodeUrlSafe(urlSafe(beforeArr[5]))
+
+			query, err := url.ParseQuery(urlSafe(after))
+			if err != nil {
+				continue
+			}
+
+			remarks := decodeUrlSafe(query.Get("remarks"))
+			name := uniqueName(names, remarks)
+
+			obfsParam := decodeUrlSafe(query.Get("obfsparam"))
+			protocolParam := decodeUrlSafe(query.Get("protoparam"))
+
+			ssr := make(map[string]any, 20)
+
+			ssr["name"] = name
+			ssr["type"] = scheme
+			ssr["server"] = host
+			ssr["port"] = port
+			ssr["cipher"] = method
+			ssr["password"] = password
+			ssr["obfs"] = obfs
+			ssr["protocol"] = protocol
+			ssr["udp"] = true
+
+			if obfsParam != "" {
+				ssr["obfs-param"] = obfsParam
+			}
+
+			if protocolParam != "" {
+				ssr["protocol-param"] = protocolParam
+			}
+
+			proxies = append(proxies, ssr)
+
 		case "socks", "socks5", "socks5h", "http", "https":
 			link, err := url.Parse(line)
 			if err != nil {
@@ -343,6 +575,49 @@ func ConvertsV2Ray(buf []byte) ([]map[string]any, error) {
 			}
 
 			proxies = append(proxies, socks)
+
+		case "anytls":
+			// https://github.com/anytls/anytls-go/blob/main/docs/uri_scheme.md
+			link, err := url.Parse(line)
+			if err != nil {
+				continue
+			}
+			username := link.User.Username()
+			password, exist := link.User.Password()
+			if !exist {
+				password = username
+			}
+			query := link.Query()
+			server := link.Hostname()
+			if server == "" {
+				continue
+			}
+			portStr := link.Port()
+			if portStr == "" {
+				continue
+			}
+			insecure, sni := query.Get("insecure"), query.Get("sni")
+			insecureBool := insecure == "1"
+			fingerprint := query.Get("hpkp")
+
+			remarks := link.Fragment
+			if remarks == "" {
+				remarks = fmt.Sprintf("%s:%s", server, portStr)
+			}
+			name := uniqueName(names, remarks)
+			anytls := make(map[string]any, 10)
+			anytls["name"] = name
+			anytls["type"] = "anytls"
+			anytls["server"] = server
+			anytls["port"] = portStr
+			anytls["username"] = username
+			anytls["password"] = password
+			anytls["sni"] = sni
+			anytls["fingerprint"] = fingerprint
+			anytls["skip-cert-verify"] = insecureBool
+			anytls["udp"] = true
+
+			proxies = append(proxies, anytls)
 		}
 	}
 

@@ -17,6 +17,7 @@ type VmessServer struct {
 	Enable          bool
 	Listen          string
 	Users           []VmessUser
+	WsPath          string
 	GrpcServiceName string
 	Certificate     string
 	PrivateKey      string
