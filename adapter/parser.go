@@ -61,6 +61,13 @@ func ParseProxy(mapping map[string]any, options ...ProxyOption) (C.Proxy, error)
 			break
 		}
 		proxy, err = outbound.NewVless(*vlessOption)
+	case "trojan":
+		trojanOption := &outbound.TrojanOption{BasicOption: basicOption}
+		err = decoder.Decode(mapping, trojanOption)
+		if err != nil {
+			break
+		}
+		proxy, err = outbound.NewTrojan(*trojanOption)
 	case "direct":
 		directOption := &outbound.DirectOption{BasicOption: basicOption}
 		err = decoder.Decode(mapping, directOption)
@@ -82,13 +89,6 @@ func ParseProxy(mapping map[string]any, options ...ProxyOption) (C.Proxy, error)
 			break
 		}
 		proxy = outbound.NewRejectWithOption(*rejectOption)
-	case "ssh":
-		sshOption := &outbound.SshOption{BasicOption: basicOption}
-		err = decoder.Decode(mapping, sshOption)
-		if err != nil {
-			break
-		}
-		proxy, err = outbound.NewSsh(*sshOption)
 	default:
 		return nil, fmt.Errorf("unsupport proxy type: %s", proxyType)
 	}

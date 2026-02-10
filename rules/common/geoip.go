@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/netip"
-	"slices"
 	"strings"
 
 	"github.com/metacubex/mihomo/component/geodata"
@@ -13,6 +12,8 @@ import (
 	"github.com/metacubex/mihomo/component/resolver"
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/log"
+
+	"golang.org/x/exp/slices"
 )
 
 type GEOIP struct {

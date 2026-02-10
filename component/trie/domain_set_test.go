@@ -1,7 +1,7 @@
 package trie_test
 
 import (
-	"slices"
+	"golang.org/x/exp/slices"
 	"testing"
 
 	"github.com/metacubex/mihomo/component/trie"

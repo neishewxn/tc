@@ -93,6 +93,13 @@ func ParseListener(mapping map[string]any) (C.InboundListener, error) {
 			return nil, err
 		}
 		listener, err = IN.NewVless(vlessOption)
+	case "trojan":
+		trojanOption := &IN.TrojanOption{}
+		err = decoder.Decode(mapping, trojanOption)
+		if err != nil {
+			return nil, err
+		}
+		listener, err = IN.NewTrojan(trojanOption)
 	default:
 		return nil, fmt.Errorf("unsupport proxy type: %s", proxyType)
 	}

@@ -499,7 +499,7 @@ func (m *Map[K, V]) doCompute(
 					e := (*entry[K, V])(eptr)
 					if e.key == key {
 						// In-place update/delete.
-						// We get a copy of the value via an interface{} on each call,
+						// We get a copy of the value via an any on each call,
 						// thus the live value pointers are unique. Otherwise atomic
 						// snapshot won't be correct in case of multiple Store calls
 						// using the same value.
@@ -747,10 +747,7 @@ func (m *Map[K, V]) transfer(table, newTable *mapTable[K, V]) {
 	for {
 		// Claim work by incrementing resizeIdx.
 		nextIdx := m.resizeIdx.Add(int64(stride))
-		start := int(nextIdx) - stride
-		if start < 0 {
-			start = 0
-		}
+		start := max(int(nextIdx)-stride, 0)
 		if start > tableLen {
 			break
 		}
@@ -858,7 +855,7 @@ func (m *Map[K, V]) Range(f func(key K, value V) bool) {
 		// the intermediate slice.
 		rootb.mu.Lock()
 		for {
-			for i := 0; i < entriesPerMapBucket; i++ {
+			for i := range entriesPerMapBucket {
 				if b.entries[i] != nil {
 					bentries = append(bentries, (*entry[K, V])(b.entries[i]))
 				}

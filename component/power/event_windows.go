@@ -38,7 +38,7 @@ func NewEventListener(cb func(Type)) (func(), error) {
 		context  uintptr
 	}
 
-	var fn interface{} = func(context uintptr, changeType uint32, setting uintptr) uintptr {
+	var fn any = func(context uintptr, changeType uint32, setting uintptr) uintptr {
 		switch changeType {
 		case PBT_APMSUSPEND:
 			cb(SUSPEND)

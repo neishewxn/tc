@@ -77,7 +77,7 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mdlayher/socket v0.5.1 // indirect
 	github.com/metacubex/ascon v0.1.0 // indirect
-	github.com/metacubex/gvisor v0.0.0-20250919004547-6122b699a301 // indirect
+	github.com/metacubex/gvisor v0.0.0-20251227095601-261ec1326fe8 // indirect
 	github.com/metacubex/hkdf v0.1.0 // indirect
 	github.com/metacubex/hpke v0.1.0 // indirect
 	github.com/metacubex/mlkem v0.1.0 // indirect
