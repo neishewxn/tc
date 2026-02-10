@@ -18,10 +18,10 @@ func printMarkWarn() {
 	})
 }
 
-func bindMarkToDialer(mark int, dialer *net.Dialer, _ string, _ netip.Addr) {
+func bindMarkToDialer(_ int, _ *net.Dialer, _ string, _ netip.Addr) {
 	printMarkWarn()
 }
 
-func bindMarkToListenConfig(mark int, lc *net.ListenConfig, _, _ string) {
+func bindMarkToListenConfig(_ int, _ *net.ListenConfig, _, _ string) {
 	printMarkWarn()
 }

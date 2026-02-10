@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"maps"
 	"net"
 	"net/netip"
 	"os"
@@ -15,6 +16,7 @@ import (
 	"time"
 
 	"github.com/metacubex/mihomo/adapter/inbound"
+	"github.com/metacubex/mihomo/common/utils"
 	"github.com/metacubex/mihomo/component/dialer"
 	"github.com/metacubex/mihomo/component/iface"
 	"github.com/metacubex/mihomo/component/resolver"
@@ -23,7 +25,6 @@ import (
 	LC "github.com/metacubex/mihomo/listener/config"
 	"github.com/metacubex/mihomo/listener/sing"
 	"github.com/metacubex/mihomo/log"
-	"golang.org/x/exp/constraints"
 
 	tun "github.com/metacubex/sing-tun"
 	"github.com/metacubex/sing/common"
@@ -33,7 +34,6 @@ import (
 	"github.com/metacubex/sing/common/ranges"
 
 	"go4.org/netipx"
-	"golang.org/x/exp/maps"
 )
 
 var InterfaceName = "Meta"
@@ -443,11 +443,6 @@ func New(options LC.Tun, tunnel C.Tunnel, additions ...inbound.Addition) (l *Lis
 
 	}
 
-	err = l.buildAndroidRules(&tunOptions)
-	if err != nil {
-		err = E.Cause(err, "build android rules")
-		return
-	}
 	tunIf, err := tunNew(tunOptions)
 	if err != nil {
 		err = E.Cause(err, "configure tun interface")
@@ -549,7 +544,7 @@ func (l *Listener) updateRule(ruleProvider P.RuleProvider, exclude bool, update 
 			} else {
 				delete(l.routeAddressMap, name)
 			}
-			l.routeAddressSet = maps.Values(l.routeAddressMap)
+			l.routeAddressSet = slices.Collect(maps.Values(l.routeAddressMap))
 		} else {
 			ipCidr := rp.ToIpCidr()
 			if ipCidr != nil {
@@ -557,7 +552,7 @@ func (l *Listener) updateRule(ruleProvider P.RuleProvider, exclude bool, update 
 			} else {
 				delete(l.routeExcludeAddressMap, name)
 			}
-			l.routeExcludeAddressSet = maps.Values(l.routeExcludeAddressMap)
+			l.routeExcludeAddressSet = slices.Collect(maps.Values(l.routeExcludeAddressMap))
 		}
 	default:
 		return
@@ -594,11 +589,12 @@ func (d *cDialerInterfaceFinder) DefaultInterfaceName(destination netip.Addr) st
 func (d *cDialerInterfaceFinder) FindInterfaceName(destination netip.Addr) string {
 	for _, dest := range []netip.Addr{destination, netip.IPv4Unspecified(), netip.IPv6Unspecified()} {
 		autoDetectInterfaceName := d.DefaultInterfaceName(dest)
-		if autoDetectInterfaceName == d.tunName {
+		switch d.DefaultInterfaceName(dest) {
+		case d.tunName:
 			log.Warnln("[TUN] Auto detect interface for %s get same name with tun", destination.String())
-		} else if autoDetectInterfaceName == "" || autoDetectInterfaceName == "<nil>" {
+		case "", "<nil>":
 			log.Warnln("[TUN] Auto detect interface for %s get empty name.", destination.String())
-		} else {
+		default:
 			log.Debugln("[TUN] Auto detect interface for %s --> %s", destination, autoDetectInterfaceName)
 			return autoDetectInterfaceName
 		}
@@ -607,13 +603,13 @@ func (d *cDialerInterfaceFinder) FindInterfaceName(destination netip.Addr) strin
 	return "<invalid>"
 }
 
-func uidToRange[T constraints.Integer](uidList []T) []ranges.Range[T] {
+func uidToRange[T utils.Integer](uidList []T) []ranges.Range[T] {
 	return common.Map(uidList, func(uid T) ranges.Range[T] {
 		return ranges.NewSingle(uid)
 	})
 }
 
-func parseRange[T constraints.Integer](uidRanges []ranges.Range[T], rangeList []string) ([]ranges.Range[T], error) {
+func parseRange[T utils.Integer](uidRanges []ranges.Range[T], rangeList []string) ([]ranges.Range[T], error) {
 	for _, uidRange := range rangeList {
 		if !strings.Contains(uidRange, ":") {
 			return nil, E.New("missing ':' in range: ", uidRange)

@@ -244,8 +244,8 @@ func TestComparable(t *testing.T) {
 	type S struct {
 		s string
 	}
-	s1 := S{s: heapStr(t)}
-	s2 := S{s: heapStr(t)}
+	s1 := S{s: heapStr()}
+	s2 := S{s: heapStr()}
 	if unsafe.StringData(s1.s) == unsafe.StringData(s2.s) {
 		t.Fatalf("unexpected two heapStr ptr equal")
 	}
@@ -271,7 +271,7 @@ func testComparableNoEqual[T comparable](t *testing.T, v1, v2 T) {
 
 var heapStrValue = []byte("aTestString")
 
-func heapStr(t *testing.T) string {
+func heapStr() string {
 	return string(heapStrValue)
 }
 
@@ -331,8 +331,8 @@ func TestWriteComparable(t *testing.T) {
 	type S struct {
 		s string
 	}
-	s1 := S{s: heapStr(t)}
-	s2 := S{s: heapStr(t)}
+	s1 := S{s: heapStr()}
+	s2 := S{s: heapStr()}
 	if unsafe.StringData(s1.s) == unsafe.StringData(s2.s) {
 		t.Fatalf("unexpected two heapStr ptr equal")
 	}
@@ -427,7 +427,7 @@ func TestComparableAllocations(t *testing.T) {
 		t.Skip("test broken in old golang version")
 	}
 	seed := MakeSeed()
-	x := heapStr(t)
+	x := heapStr()
 	allocs := testing.AllocsPerRun(10, func() {
 		s := "s" + x
 		Comparable(seed, s)

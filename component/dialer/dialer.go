@@ -126,11 +126,11 @@ func dialContext(ctx context.Context, network string, destination netip.Addr, po
 	address = net.JoinHostPort(destination.String(), port)
 
 	netDialer := opt.netDialer
-	switch netDialer.(type) {
+	switch n := netDialer.(type) {
 	case nil:
 		netDialer = &net.Dialer{}
 	case *net.Dialer:
-		_netDialer := *netDialer.(*net.Dialer)
+		_netDialer := *n
 		netDialer = &_netDialer // make a copy
 	default:
 		return netDialer.DialContext(ctx, network, address)

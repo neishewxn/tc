@@ -34,7 +34,7 @@ func serializesSocksAddr(metadata *C.Metadata) []byte {
 	return bytes.Join(buf, nil)
 }
 
-func resolveUDPAddr(ctx context.Context, network, address string, prefer C.DNSPrefer) (*net.UDPAddr, error) {
+func resolveUDPAddr(ctx context.Context, _, address string, prefer C.DNSPrefer) (*net.UDPAddr, error) {
 	host, port, err := net.SplitHostPort(address)
 	if err != nil {
 		return nil, err

@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"github.com/metacubex/chacha"
-	"gitlab.com/go-extension/aes-ccm"
 	"golang.org/x/crypto/chacha20poly1305"
 	"golang.org/x/crypto/hkdf"
 )
@@ -75,25 +74,6 @@ func AESGCM(psk []byte) (Cipher, error) {
 		return nil, aes.KeySizeError(l)
 	}
 	return &metaCipher{psk: psk, makeAEAD: aesGCM}, nil
-}
-
-func aesCCM(key []byte) (cipher.AEAD, error) {
-	blk, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
-	return ccm.NewCCM(blk)
-}
-
-// AESCCM creates a new Cipher with a pre-shared key. len(psk) must be
-// one of 16, 24, or 32 to select AES-128/196/256-GCM.
-func AESCCM(psk []byte) (Cipher, error) {
-	switch l := len(psk); l {
-	case 16, 24, 32: // AES 128/196/256
-	default:
-		return nil, aes.KeySizeError(l)
-	}
-	return &metaCipher{psk: psk, makeAEAD: aesCCM}, nil
 }
 
 // Chacha20Poly1305 creates a new Cipher with a pre-shared key. len(psk)

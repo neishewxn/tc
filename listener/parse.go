@@ -72,20 +72,6 @@ func ParseListener(mapping map[string]any) (C.InboundListener, error) {
 			return nil, err
 		}
 		listener, err = IN.NewTun(tunOption)
-	case "shadowsocks":
-		shadowsocksOption := &IN.ShadowSocksOption{UDP: true}
-		err = decoder.Decode(mapping, shadowsocksOption)
-		if err != nil {
-			return nil, err
-		}
-		listener, err = IN.NewShadowSocks(shadowsocksOption)
-	case "vmess":
-		vmessOption := &IN.VmessOption{}
-		err = decoder.Decode(mapping, vmessOption)
-		if err != nil {
-			return nil, err
-		}
-		listener, err = IN.NewVmess(vmessOption)
 	case "vless":
 		vlessOption := &IN.VlessOption{}
 		err = decoder.Decode(mapping, vlessOption)

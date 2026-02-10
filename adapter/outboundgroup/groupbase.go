@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -17,7 +18,6 @@ import (
 	"github.com/metacubex/mihomo/tunnel"
 
 	"github.com/dlclark/regexp2"
-	"golang.org/x/exp/slices"
 )
 
 type GroupBase struct {

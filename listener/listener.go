@@ -12,10 +12,7 @@ import (
 	"github.com/metacubex/mihomo/listener/http"
 	"github.com/metacubex/mihomo/listener/mixed"
 	"github.com/metacubex/mihomo/listener/redir"
-	embedSS "github.com/metacubex/mihomo/listener/shadowsocks"
-	"github.com/metacubex/mihomo/listener/sing_shadowsocks"
 	"github.com/metacubex/mihomo/listener/sing_tun"
-	"github.com/metacubex/mihomo/listener/sing_vmess"
 	"github.com/metacubex/mihomo/listener/socks"
 	"github.com/metacubex/mihomo/listener/tproxy"
 	LT "github.com/metacubex/mihomo/listener/tunnel"
@@ -41,8 +38,6 @@ var (
 	tunnelUDPListeners  = map[string]*LT.PacketConn{}
 	inboundListeners    = map[string]C.InboundListener{}
 	tunLister           *sing_tun.Listener
-	shadowSocksListener C.MultiAddrListener
-	vmessListener       *sing_vmess.Listener
 
 	// lock for recreate function
 	socksMux   sync.Mutex
@@ -53,8 +48,6 @@ var (
 	tunnelMux  sync.Mutex
 	inboundMux sync.Mutex
 	tunMux     sync.Mutex
-	ssMux      sync.Mutex
-	vmessMux   sync.Mutex
 
 	LastTunConf  LC.Tun
 )
@@ -65,8 +58,6 @@ type Ports struct {
 	RedirPort         int    `json:"redir-port"`
 	TProxyPort        int    `json:"tproxy-port"`
 	MixedPort         int    `json:"mixed-port"`
-	ShadowSocksConfig string `json:"ss-config"`
-	VmessConfig       string `json:"vmess-config"`
 }
 
 func GetTunConf() LC.Tun {
@@ -229,110 +220,6 @@ func ReCreateRedir(port int, tunnel C.Tunnel) {
 	}
 
 	log.Infoln("Redirect proxy listening at: %s", redirListener.Address())
-}
-
-func ReCreateShadowSocks(shadowSocksConfig string, tunnel C.Tunnel) {
-	ssMux.Lock()
-	defer ssMux.Unlock()
-
-	var err error
-	defer func() {
-		if err != nil {
-			log.Errorln("Start ShadowSocks server error: %s", err.Error())
-		}
-	}()
-
-	var ssConfig LC.ShadowsocksServer
-	if addr, cipher, password, err := embedSS.ParseSSURL(shadowSocksConfig); err == nil {
-		ssConfig = LC.ShadowsocksServer{
-			Enable:   len(shadowSocksConfig) > 0,
-			Listen:   addr,
-			Password: password,
-			Cipher:   cipher,
-			Udp:      true,
-		}
-	}
-
-	shouldIgnore := false
-
-	if shadowSocksListener != nil {
-		if shadowSocksListener.Config() != ssConfig.String() {
-			shadowSocksListener.Close()
-			shadowSocksListener = nil
-		} else {
-			shouldIgnore = true
-		}
-	}
-
-	if shouldIgnore {
-		return
-	}
-
-	if !ssConfig.Enable {
-		return
-	}
-
-	listener, err := sing_shadowsocks.New(ssConfig, tunnel)
-	if err != nil {
-		return
-	}
-
-	shadowSocksListener = listener
-
-	for _, addr := range shadowSocksListener.AddrList() {
-		log.Infoln("ShadowSocks proxy listening at: %s", addr.String())
-	}
-}
-
-func ReCreateVmess(vmessConfig string, tunnel C.Tunnel) {
-	vmessMux.Lock()
-	defer vmessMux.Unlock()
-
-	var err error
-	defer func() {
-		if err != nil {
-			log.Errorln("Start Vmess server error: %s", err.Error())
-		}
-	}()
-
-	var vsConfig LC.VmessServer
-	if addr, username, password, err := sing_vmess.ParseVmessURL(vmessConfig); err == nil {
-		vsConfig = LC.VmessServer{
-			Enable: len(vmessConfig) > 0,
-			Listen: addr,
-			Users:  []LC.VmessUser{{Username: username, UUID: password, AlterID: 1}},
-		}
-	}
-
-	shouldIgnore := false
-
-	if vmessListener != nil {
-		if vmessListener.Config() != vsConfig.String() {
-			vmessListener.Close()
-			vmessListener = nil
-		} else {
-			shouldIgnore = true
-		}
-	}
-
-	if shouldIgnore {
-		return
-	}
-
-	if !vsConfig.Enable {
-		return
-	}
-
-	listener, err := sing_vmess.New(vsConfig, tunnel)
-	if err != nil {
-		return
-	}
-
-	vmessListener = listener
-
-	for _, addr := range vmessListener.AddrList() {
-		log.Infoln("Vmess proxy listening at: %s", addr.String())
-	}
 }
 
 func ReCreateTProxy(port int, tunnel C.Tunnel) {
@@ -625,14 +512,6 @@ func GetPorts() *Ports {
 		_, portStr, _ := net.SplitHostPort(mixedListener.Address())
 		port, _ := strconv.Atoi(portStr)
 		ports.MixedPort = port
-	}
-
-	if shadowSocksListener != nil {
-		ports.ShadowSocksConfig = shadowSocksListener.Config()
-	}
-
-	if vmessListener != nil {
-		ports.VmessConfig = vmessListener.Config()
 	}
 
 	return ports

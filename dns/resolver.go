@@ -3,6 +3,7 @@ package dns
 import (
 	"context"
 	"errors"
+	"maps"
 	"net/netip"
 	"time"
 
@@ -16,7 +17,6 @@ import (
 
 	D "github.com/miekg/dns"
 	"github.com/samber/lo"
-	"golang.org/x/exp/maps"
 )
 
 type dnsClient interface {

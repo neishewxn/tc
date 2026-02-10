@@ -168,8 +168,8 @@ func wsWriteServerText(w io.Writer, p []byte) error {
 	return wsWriteServerMessage(w, opText, p)
 }
 
-// wsWriteServerBinary is the same as wsWriteServerMessage with ws.OpBinary.
-func wsWriteServerBinary(w io.Writer, p []byte) error {
-	const opBinary = 0x2
-	return wsWriteServerMessage(w, opBinary, p)
-}
+// // wsWriteServerBinary is the same as wsWriteServerMessage with ws.OpBinary.
+// func wsWriteServerBinary(w io.Writer, p []byte) error {
+// 	const opBinary = 0x2
+// 	return wsWriteServerMessage(w, opBinary, p)
+// }

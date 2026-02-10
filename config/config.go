@@ -7,6 +7,7 @@ import (
 	"net/netip"
 	"net/url"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 	_ "unsafe"
@@ -38,8 +39,6 @@ import (
 	RP "github.com/metacubex/mihomo/rules/provider"
 	RW "github.com/metacubex/mihomo/rules/wrapper"
 	T "github.com/metacubex/mihomo/tunnel"
-
-	"golang.org/x/exp/slices"
 )
 
 // General config
@@ -70,22 +69,20 @@ type General struct {
 
 // Inbound config
 type Inbound struct {
-	Port              int            `json:"port"`
-	SocksPort         int            `json:"socks-port"`
-	RedirPort         int            `json:"redir-port"`
-	TProxyPort        int            `json:"tproxy-port"`
-	MixedPort         int            `json:"mixed-port"`
-	Tun               LC.Tun         `json:"tun"`
-	ShadowSocksConfig string         `json:"ss-config"`
-	VmessConfig       string         `json:"vmess-config"`
-	Authentication    []string       `json:"authentication"`
-	SkipAuthPrefixes  []netip.Prefix `json:"skip-auth-prefixes"`
-	LanAllowedIPs     []netip.Prefix `json:"lan-allowed-ips"`
-	LanDisAllowedIPs  []netip.Prefix `json:"lan-disallowed-ips"`
-	AllowLan          bool           `json:"allow-lan"`
-	BindAddress       string         `json:"bind-address"`
-	InboundTfo        bool           `json:"inbound-tfo"`
-	InboundMPTCP      bool           `json:"inbound-mptcp"`
+	Port             int            `json:"port"`
+	SocksPort        int            `json:"socks-port"`
+	RedirPort        int            `json:"redir-port"`
+	TProxyPort       int            `json:"tproxy-port"`
+	MixedPort        int            `json:"mixed-port"`
+	Tun              LC.Tun         `json:"tun"`
+	Authentication   []string       `json:"authentication"`
+	SkipAuthPrefixes []netip.Prefix `json:"skip-auth-prefixes"`
+	LanAllowedIPs    []netip.Prefix `json:"lan-allowed-ips"`
+	LanDisAllowedIPs []netip.Prefix `json:"lan-disallowed-ips"`
+	AllowLan         bool           `json:"allow-lan"`
+	BindAddress      string         `json:"bind-address"`
+	InboundTfo       bool           `json:"inbound-tfo"`
+	InboundMPTCP     bool           `json:"inbound-mptcp"`
 }
 
 // GeoXUrl config
@@ -372,13 +369,13 @@ type RawTLS struct {
 }
 
 type RawConfig struct {
-	Port                    int                     `yaml:"port" json:"port"`
-	SocksPort               int                     `yaml:"socks-port" json:"socks-port"`
-	RedirPort               int                     `yaml:"redir-port" json:"redir-port"`
-	TProxyPort              int                     `yaml:"tproxy-port" json:"tproxy-port"`
-	MixedPort               int                     `yaml:"mixed-port" json:"mixed-port"`
-	ShadowSocksConfig       string                  `yaml:"ss-config" json:"ss-config"`
-	VmessConfig             string                  `yaml:"vmess-config" json:"vmess-config"`
+	Port       int `yaml:"port" json:"port"`
+	SocksPort  int `yaml:"socks-port" json:"socks-port"`
+	RedirPort  int `yaml:"redir-port" json:"redir-port"`
+	TProxyPort int `yaml:"tproxy-port" json:"tproxy-port"`
+	MixedPort  int `yaml:"mixed-port" json:"mixed-port"`
+	// ShadowSocksConfig       string                  `yaml:"ss-config" json:"ss-config"`
+	// VmessConfig             string                  `yaml:"vmess-config" json:"vmess-config"`
 	InboundTfo              bool                    `yaml:"inbound-tfo" json:"inbound-tfo"`
 	InboundMPTCP            bool                    `yaml:"inbound-mptcp" json:"inbound-mptcp"`
 	Authentication          []string                `yaml:"authentication" json:"authentication"`
@@ -704,20 +701,18 @@ func temporaryUpdateGeneral(general *General) func()
 func parseGeneral(cfg *RawConfig) (*General, error) {
 	return &General{
 		Inbound: Inbound{
-			Port:              cfg.Port,
-			SocksPort:         cfg.SocksPort,
-			RedirPort:         cfg.RedirPort,
-			TProxyPort:        cfg.TProxyPort,
-			MixedPort:         cfg.MixedPort,
-			ShadowSocksConfig: cfg.ShadowSocksConfig,
-			VmessConfig:       cfg.VmessConfig,
-			AllowLan:          cfg.AllowLan,
-			SkipAuthPrefixes:  cfg.SkipAuthPrefixes,
-			LanAllowedIPs:     cfg.LanAllowedIPs,
-			LanDisAllowedIPs:  cfg.LanDisAllowedIPs,
-			BindAddress:       cfg.BindAddress,
-			InboundTfo:        cfg.InboundTfo,
-			InboundMPTCP:      cfg.InboundMPTCP,
+			Port:             cfg.Port,
+			SocksPort:        cfg.SocksPort,
+			RedirPort:        cfg.RedirPort,
+			TProxyPort:       cfg.TProxyPort,
+			MixedPort:        cfg.MixedPort,
+			AllowLan:         cfg.AllowLan,
+			SkipAuthPrefixes: cfg.SkipAuthPrefixes,
+			LanAllowedIPs:    cfg.LanAllowedIPs,
+			LanDisAllowedIPs: cfg.LanDisAllowedIPs,
+			BindAddress:      cfg.BindAddress,
+			InboundTfo:       cfg.InboundTfo,
+			InboundMPTCP:     cfg.InboundMPTCP,
 		},
 		UnifiedDelay: cfg.UnifiedDelay,
 		Mode:         cfg.Mode,

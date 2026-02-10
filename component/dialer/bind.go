@@ -91,12 +91,12 @@ func fallbackBindIfaceToListenConfig(ifaceName string, _ *net.ListenConfig, netw
 	return addr.String(), nil
 }
 
-func fallbackParseNetwork(network string, addr netip.Addr) string {
-	// fix fallbackBindIfaceToListenConfig() force bind to an ipv4 address
-	if !strings.HasSuffix(network, "4") &&
-		!strings.HasSuffix(network, "6") &&
-		addr.Unmap().Is6() {
-		network += "6"
-	}
-	return network
-}
+// func fallbackParseNetwork(network string, addr netip.Addr) string {
+// 	// fix fallbackBindIfaceToListenConfig() force bind to an ipv4 address
+// 	if !strings.HasSuffix(network, "4") &&
+// 		!strings.HasSuffix(network, "6") &&
+// 		addr.Unmap().Is6() {
+// 		network += "6"
+// 	}
+// 	return network
+// }
