@@ -6,7 +6,6 @@ import (
 
 	"github.com/metacubex/mihomo/adapter/inbound"
 	"github.com/metacubex/mihomo/component/ca"
-	"github.com/metacubex/mihomo/component/ech"
 	C "github.com/metacubex/mihomo/constant"
 	authStore "github.com/metacubex/mihomo/listener/auth"
 	LC "github.com/metacubex/mihomo/listener/config"
@@ -77,13 +76,6 @@ func NewWithConfig(config LC.AuthServer, tunnel C.Tunnel, additions ...inbound.A
 		}
 		tlsConfig.GetCertificate = func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
 			return certLoader()
-		}
-
-		if config.EchKey != "" {
-			err = ech.LoadECHKey(config.EchKey, tlsConfig)
-			if err != nil {
-				return nil, err
-			}
 		}
 	}
 	tlsConfig.ClientAuth = ca.ClientAuthTypeFromString(config.ClientAuthType)

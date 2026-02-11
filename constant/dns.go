@@ -148,5 +148,5 @@ const (
 	// HTTPVersion2 is HTTP/2.
 	HTTPVersion2 HTTPVersion = "h2"
 	// HTTPVersion3 is HTTP/3.
-	HTTPVersion3 HTTPVersion = "h3"
+	// HTTPVersion3 HTTPVersion = "h3"
 )

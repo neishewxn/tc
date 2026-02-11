@@ -19,7 +19,6 @@ type VlessOption struct {
 	PrivateKey      string        `inbound:"private-key,omitempty"`
 	ClientAuthType  string        `inbound:"client-auth-type,omitempty"`
 	ClientAuthCert  string        `inbound:"client-auth-cert,omitempty"`
-	EchKey          string        `inbound:"ech-key,omitempty"`
 	RealityConfig   RealityConfig `inbound:"reality-config,omitempty"`
 	MuxOption       MuxOption     `inbound:"mux-option,omitempty"`
 }
@@ -68,7 +67,6 @@ func NewVless(options *VlessOption) (*Vless, error) {
 			PrivateKey:      options.PrivateKey,
 			ClientAuthType:  options.ClientAuthType,
 			ClientAuthCert:  options.ClientAuthCert,
-			EchKey:          options.EchKey,
 			RealityConfig:   options.RealityConfig.Build(),
 			MuxOption:       options.MuxOption.Build(),
 		},

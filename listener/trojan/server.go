@@ -10,7 +10,6 @@ import (
 	N "github.com/metacubex/mihomo/common/net"
 	"github.com/metacubex/mihomo/common/utils"
 	"github.com/metacubex/mihomo/component/ca"
-	"github.com/metacubex/mihomo/component/ech"
 	C "github.com/metacubex/mihomo/constant"
 	LC "github.com/metacubex/mihomo/listener/config"
 	"github.com/metacubex/mihomo/listener/reality"
@@ -84,13 +83,6 @@ func New(config LC.TrojanServer, tunnel C.Tunnel, additions ...inbound.Addition)
 		}
 		tlsConfig.GetCertificate = func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
 			return certLoader()
-		}
-
-		if config.EchKey != "" {
-			err = ech.LoadECHKey(config.EchKey, tlsConfig)
-			if err != nil {
-				return nil, err
-			}
 		}
 	}
 	tlsConfig.ClientAuth = ca.ClientAuthTypeFromString(config.ClientAuthType)

@@ -311,47 +311,6 @@ func TestMihomo_VmessWebsocketTLS(t *testing.T) {
 	testSuit(t, proxy)
 }
 
-func TestMihomo_VmessGrpc(t *testing.T) {
-	cfg := &container.Config{
-		Image:        ImageVmess,
-		ExposedPorts: defaultExposedPorts,
-	}
-	hostCfg := &container.HostConfig{
-		PortBindings: defaultPortBindings,
-		Binds: []string{
-			fmt.Sprintf("%s:/etc/v2ray/config.json", C.Path.Resolve("vmess-grpc.json")),
-			fmt.Sprintf("%s:/etc/ssl/v2ray/fullchain.pem", C.Path.Resolve("example.org.pem")),
-			fmt.Sprintf("%s:/etc/ssl/v2ray/privkey.pem", C.Path.Resolve("example.org-key.pem")),
-		},
-	}
-
-	id, err := startContainer(cfg, hostCfg, "vmess-grpc")
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		cleanContainer(id)
-	})
-
-	proxy, err := outbound.NewVmess(outbound.VmessOption{
-		Name:           "vmess",
-		Server:         localIP.String(),
-		Port:           10002,
-		UUID:           "b831381d-6324-4d53-ad4f-8cda48b30811",
-		Cipher:         "auto",
-		Network:        "grpc",
-		TLS:            true,
-		SkipCertVerify: true,
-		UDP:            true,
-		ServerName:     "example.org",
-		GrpcOpts: outbound.GrpcOptions{
-			GrpcServiceName: "example!",
-		},
-	})
-	require.NoError(t, err)
-
-	time.Sleep(waitTime)
-	testSuit(t, proxy)
-}
-
 func TestMihomo_VmessWebsocket0RTT(t *testing.T) {
 	cfg := &container.Config{
 		Image:        ImageVmess,

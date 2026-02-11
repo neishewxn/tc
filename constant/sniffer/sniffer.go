@@ -19,11 +19,10 @@ type MultiPacketSniffer interface {
 const (
 	TLS Type = iota
 	HTTP
-	QUIC
 )
 
 var (
-	List = []Type{TLS, HTTP, QUIC}
+	List = []Type{TLS, HTTP}
 )
 
 type Type int
@@ -34,8 +33,6 @@ func (rt Type) String() string {
 		return "TLS"
 	case HTTP:
 		return "HTTP"
-	case QUIC:
-		return "QUIC"
 	default:
 		return "Unknown"
 	}

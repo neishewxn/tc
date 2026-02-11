@@ -1,6 +1,6 @@
 module github.com/metacubex/mihomo
 
-go 1.25
+go 1.26
 
 require (
 	github.com/bahlo/generic-list-go v0.2.0
@@ -20,7 +20,6 @@ require (
 	github.com/metacubex/fswatch v0.1.1
 	github.com/metacubex/http v0.1.0
 	github.com/metacubex/kcp-go v0.0.0-20260105040817-550693377604
-	github.com/metacubex/quic-go v0.59.1-0.20260128071132-0f3233b973af
 	github.com/metacubex/randv2 v0.2.0
 	github.com/metacubex/sing v0.5.7
 	github.com/metacubex/sing-mux v0.3.5
@@ -79,7 +78,6 @@ require (
 	github.com/metacubex/hpke v0.1.0 // indirect
 	github.com/metacubex/mlkem v0.1.0 // indirect
 	github.com/metacubex/nftables v0.0.0-20250503052935-30a69ab87793 // indirect
-	github.com/metacubex/qpack v0.6.0 // indirect
 	github.com/metacubex/yamux v0.0.0-20250918083631-dd5f17c0be49 // indirect
 	github.com/oasisprotocol/deoxysii v0.0.0-20220228165953-2091330c22b7 // indirect
 	github.com/pierrec/lz4/v4 v4.1.14 // indirect

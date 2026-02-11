@@ -53,9 +53,6 @@ func testInboundVless(t *testing.T, inboundOptions inbound.VlessOption, outbound
 
 	tunnel.DoTest(t, out)
 
-	if outboundOptions.Network == "grpc" { // don't test sing-mux over grpc
-		return
-	}
 	testSingMux(t, tunnel, out)
 }
 
@@ -68,49 +65,12 @@ func testInboundVlessTLS(t *testing.T, inboundOptions inbound.VlessOption, outbo
 			testInboundVless(t, inboundOptions, outboundOptions)
 		})
 	}
-	t.Run("ECH", func(t *testing.T) {
-		inboundOptions := inboundOptions
-		outboundOptions := outboundOptions
-		inboundOptions.EchKey = echKeyPem
-		outboundOptions.ECHOpts = outbound.ECHOptions{
-			Enable: true,
-			Config: echConfigBase64,
-		}
-		testInboundVless(t, inboundOptions, outboundOptions)
-		if testVision {
-			t.Run("xtls-rprx-vision", func(t *testing.T) {
-				outboundOptions := outboundOptions
-				outboundOptions.Flow = "xtls-rprx-vision"
-				testInboundVless(t, inboundOptions, outboundOptions)
-			})
-		}
-	})
 	t.Run("mTLS", func(t *testing.T) {
 		inboundOptions := inboundOptions
 		outboundOptions := outboundOptions
 		inboundOptions.ClientAuthCert = tlsAuthCertificate
 		outboundOptions.Certificate = tlsAuthCertificate
 		outboundOptions.PrivateKey = tlsAuthPrivateKey
-		testInboundVless(t, inboundOptions, outboundOptions)
-		if testVision {
-			t.Run("xtls-rprx-vision", func(t *testing.T) {
-				outboundOptions := outboundOptions
-				outboundOptions.Flow = "xtls-rprx-vision"
-				testInboundVless(t, inboundOptions, outboundOptions)
-			})
-		}
-	})
-	t.Run("mTLS+ECH", func(t *testing.T) {
-		inboundOptions := inboundOptions
-		outboundOptions := outboundOptions
-		inboundOptions.ClientAuthCert = tlsAuthCertificate
-		outboundOptions.Certificate = tlsAuthCertificate
-		outboundOptions.PrivateKey = tlsAuthPrivateKey
-		inboundOptions.EchKey = echKeyPem
-		outboundOptions.ECHOpts = outbound.ECHOptions{
-			Enable: true,
-			Config: echConfigBase64,
-		}
 		testInboundVless(t, inboundOptions, outboundOptions)
 		if testVision {
 			t.Run("xtls-rprx-vision", func(t *testing.T) {
@@ -194,19 +154,6 @@ func TestInboundVless_Encryption(t *testing.T) {
 							testInboundVless(t, inboundOptions, outboundOptions)
 						})
 					})
-					t.Run("grpc", func(t *testing.T) {
-						inboundOptions := inboundOptions
-						inboundOptions.GrpcServiceName = "GunService"
-						outboundOptions := outboundOptions
-						outboundOptions.Network = "grpc"
-						outboundOptions.GrpcOpts = outbound.GrpcOptions{GrpcServiceName: "GunService"}
-						testInboundVless(t, inboundOptions, outboundOptions)
-						t.Run("xtls-rprx-vision", func(t *testing.T) {
-							outboundOptions := outboundOptions
-							outboundOptions.Flow = "xtls-rprx-vision"
-							testInboundVless(t, inboundOptions, outboundOptions)
-						})
-					})
 				})
 			}
 		})
@@ -245,37 +192,6 @@ func TestInboundVless_Wss2(t *testing.T) {
 	testInboundVlessTLS(t, inboundOptions, outboundOptions, false)
 }
 
-func TestInboundVless_Grpc1(t *testing.T) {
-	inboundOptions := inbound.VlessOption{
-		Certificate:     tlsCertificate,
-		PrivateKey:      tlsPrivateKey,
-		GrpcServiceName: "GunService",
-	}
-	outboundOptions := outbound.VlessOption{
-		TLS:         true,
-		Fingerprint: tlsFingerprint,
-		Network:     "grpc",
-		GrpcOpts:    outbound.GrpcOptions{GrpcServiceName: "GunService"},
-	}
-	testInboundVlessTLS(t, inboundOptions, outboundOptions, false)
-}
-
-func TestInboundVless_Grpc2(t *testing.T) {
-	inboundOptions := inbound.VlessOption{
-		Certificate:     tlsCertificate,
-		PrivateKey:      tlsPrivateKey,
-		WsPath:          "/ws",
-		GrpcServiceName: "GunService",
-	}
-	outboundOptions := outbound.VlessOption{
-		TLS:         true,
-		Fingerprint: tlsFingerprint,
-		Network:     "grpc",
-		GrpcOpts:    outbound.GrpcOptions{GrpcServiceName: "GunService"},
-	}
-	testInboundVlessTLS(t, inboundOptions, outboundOptions, false)
-}
-
 func TestInboundVless_Reality(t *testing.T) {
 	inboundOptions := inbound.VlessOption{
 		RealityConfig: inbound.RealityConfig{
@@ -309,34 +225,5 @@ func TestInboundVless_Reality(t *testing.T) {
 			outboundOptions.Flow = "xtls-rprx-vision"
 			testInboundVless(t, inboundOptions, outboundOptions)
 		})
-	})
-}
-
-func TestInboundVless_Reality_Grpc(t *testing.T) {
-	inboundOptions := inbound.VlessOption{
-		RealityConfig: inbound.RealityConfig{
-			Dest:        net.JoinHostPort(realityDest, "443"),
-			PrivateKey:  realityPrivateKey,
-			ShortID:     []string{realityShortid},
-			ServerNames: []string{realityDest},
-		},
-		GrpcServiceName: "GunService",
-	}
-	outboundOptions := outbound.VlessOption{
-		TLS:        true,
-		ServerName: realityDest,
-		RealityOpts: outbound.RealityOptions{
-			PublicKey: realityPublickey,
-			ShortID:   realityShortid,
-		},
-		ClientFingerprint: "chrome",
-		Network:           "grpc",
-		GrpcOpts:          outbound.GrpcOptions{GrpcServiceName: "GunService"},
-	}
-	testInboundVless(t, inboundOptions, outboundOptions)
-	t.Run("X25519MLKEM768", func(t *testing.T) {
-		outboundOptions := outboundOptions
-		outboundOptions.RealityOpts.SupportX25519MLKEM768 = true
-		testInboundVless(t, inboundOptions, outboundOptions)
 	})
 }

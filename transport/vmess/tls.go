@@ -6,7 +6,6 @@ import (
 	"net"
 
 	"github.com/metacubex/mihomo/component/ca"
-	"github.com/metacubex/mihomo/component/ech"
 	tlsC "github.com/metacubex/mihomo/component/tls"
 
 	"github.com/metacubex/tls"
@@ -20,12 +19,7 @@ type TLSConfig struct {
 	PrivateKey        string
 	ClientFingerprint string
 	NextProtos        []string
-	ECH               *ech.Config
 	Reality           *tlsC.RealityConfig
-}
-
-type ECHConfig struct {
-	Enable bool
 }
 
 func StreamTLSConn(ctx context.Context, conn net.Conn, cfg *TLSConfig) (net.Conn, error) {
@@ -47,12 +41,7 @@ func StreamTLSConn(ctx context.Context, conn net.Conn, cfg *TLSConfig) (net.Conn
 		if cfg.Reality != nil {
 			return tlsC.GetRealityConn(ctx, conn, clientFingerprint, tlsConfig.ServerName, cfg.Reality)
 		}
-		tlsConfig := tlsC.UConfig(tlsConfig)
-		err = cfg.ECH.ClientHandleUTLS(ctx, tlsConfig)
-		if err != nil {
-			return nil, err
-		}
-		tlsConn := tlsC.UClient(conn, tlsConfig, clientFingerprint)
+		tlsConn := tlsC.UClient(conn, tlsC.UConfig(tlsConfig), clientFingerprint)
 		err = tlsConn.HandshakeContext(ctx)
 		if err != nil {
 			return nil, err
@@ -61,11 +50,6 @@ func StreamTLSConn(ctx context.Context, conn net.Conn, cfg *TLSConfig) (net.Conn
 	}
 	if cfg.Reality != nil {
 		return nil, errors.New("REALITY is based on uTLS, please set a client-fingerprint")
-	}
-
-	err = cfg.ECH.ClientHandle(ctx, tlsConfig)
-	if err != nil {
-		return nil, err
 	}
 
 	tlsConn := tls.Client(conn, tlsConfig)

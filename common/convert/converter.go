@@ -145,11 +145,6 @@ func ConvertsV2Ray(buf []byte) ([]map[string]any, error) {
 				wsOpts["headers"] = headers
 
 				trojan["ws-opts"] = wsOpts
-
-			case "grpc":
-				grpcOpts := make(map[string]any)
-				grpcOpts["grpc-service-name"] = query.Get("serviceName")
-				trojan["grpc-opts"] = grpcOpts
 			}
 
 			if fingerprint := query.Get("fp"); fingerprint == "" {
@@ -334,11 +329,6 @@ func ConvertsV2Ray(buf []byte) ([]map[string]any, error) {
 				}
 				wsOpts["headers"] = headers
 				vmess["ws-opts"] = wsOpts
-
-			case "grpc":
-				grpcOpts := make(map[string]any)
-				grpcOpts["grpc-service-name"] = values["path"]
-				vmess["grpc-opts"] = grpcOpts
 			}
 
 			proxies = append(proxies, vmess)

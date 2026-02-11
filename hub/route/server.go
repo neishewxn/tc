@@ -15,7 +15,6 @@ import (
 	"github.com/metacubex/mihomo/adapter/inbound"
 	"github.com/metacubex/mihomo/common/utils"
 	"github.com/metacubex/mihomo/component/ca"
-	"github.com/metacubex/mihomo/component/ech"
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/log"
 	"github.com/metacubex/mihomo/ntp"
@@ -224,13 +223,6 @@ func startTLS(cfg *Config) {
 			tlsConfig.ClientCAs = pool
 		}
 
-		if cfg.EchKey != "" {
-			err = ech.LoadECHKey(cfg.EchKey, tlsConfig)
-			if err != nil {
-				log.Errorln("External controller tls serve error: %s", err)
-				return
-			}
-		}
 		server := &http.Server{
 			Handler: router(cfg.IsDebug, cfg.Secret, cfg.DohServer, cfg.Cors),
 		}

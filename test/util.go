@@ -10,7 +10,7 @@ func Listen(network, address string) (net.Listener, error) {
 	lc := net.ListenConfig{}
 
 	var lastErr error
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		l, err := lc.Listen(context.Background(), network, address)
 		if err == nil {
 			return l, nil
@@ -24,7 +24,7 @@ func Listen(network, address string) (net.Listener, error) {
 
 func ListenPacket(network, address string) (net.PacketConn, error) {
 	var lastErr error
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		l, err := net.ListenPacket(network, address)
 		if err == nil {
 			return l, nil
@@ -37,7 +37,7 @@ func ListenPacket(network, address string) (net.PacketConn, error) {
 }
 
 func TCPing(addr string) bool {
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		conn, err := net.Dial("tcp", addr)
 		if err == nil {
 			conn.Close()

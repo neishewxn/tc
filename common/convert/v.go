@@ -129,11 +129,6 @@ func handleVShareLink(names map[string]int, url *url.URL, scheme string, proxy m
 		}
 
 		proxy["ws-opts"] = wsOpts
-
-	case "grpc":
-		grpcOpts := make(map[string]any)
-		grpcOpts["grpc-service-name"] = query.Get("serviceName")
-		proxy["grpc-opts"] = grpcOpts
 	}
 	return nil
 }

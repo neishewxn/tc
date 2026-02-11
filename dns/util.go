@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/metacubex/mihomo/common/picker"
-	"github.com/metacubex/mihomo/component/ech/echparser"
 	"github.com/metacubex/mihomo/component/resolver"
 	"github.com/metacubex/mihomo/log"
 
@@ -105,8 +104,6 @@ func transform(servers []NameServer, resolver *Resolver) []dnsClient {
 			c = newSystemClient()
 		case "rcode":
 			c = newRCodeClient(s.Addr)
-		case "quic":
-			c = newDoQ(s.Addr, resolver, s.Params, s.ProxyAdapter, s.ProxyName)
 		default:
 			c = newClient(s.Addr, resolver, s.Net, s.Params, s.ProxyAdapter, s.ProxyName)
 		}
@@ -294,12 +291,6 @@ func msgToHTTPSRRInfo(msg *D.Msg) string {
 				case *D.SVCBIPv6Hint:
 					if len(v.Hint) > 0 {
 						hasIPv6 = true
-					}
-				case *D.SVCBECHConfig:
-					if publicName == "" && len(v.ECH) > 0 {
-						if cfgs, err := echparser.ParseECHConfigList(v.ECH); err == nil && len(cfgs) > 0 {
-							publicName = string(cfgs[0].PublicName)
-						}
 					}
 				}
 			}
