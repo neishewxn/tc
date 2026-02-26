@@ -6,8 +6,10 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"maps"
 	"net"
 	"strconv"
+	"strings"
 
 	N "github.com/metacubex/mihomo/common/net"
 	"github.com/metacubex/mihomo/component/ca"
@@ -91,16 +93,15 @@ func (h *Http) shakeHandContext(ctx context.Context, c net.Conn, metadata *C.Met
 	}
 
 	addr := metadata.RemoteAddress()
-	HeaderString := "CONNECT " + addr + " HTTP/1.1\r\n"
+	var HeaderString strings.Builder
+	HeaderString.WriteString("CONNECT " + addr + " HTTP/1.1\r\n")
 	tempHeaders := map[string]string{
 		"Host":             addr,
 		"User-Agent":       "Go-http-client/1.1",
 		"Proxy-Connection": "Keep-Alive",
 	}
 
-	for key, value := range h.option.Headers {
-		tempHeaders[key] = value
-	}
+	maps.Copy(tempHeaders, h.option.Headers)
 
 	if h.user != "" && h.pass != "" {
 		auth := h.user + ":" + h.pass
@@ -108,12 +109,12 @@ func (h *Http) shakeHandContext(ctx context.Context, c net.Conn, metadata *C.Met
 	}
 
 	for key, value := range tempHeaders {
-		HeaderString += key + ": " + value + "\r\n"
+		HeaderString.WriteString(key + ": " + value + "\r\n")
 	}
 
-	HeaderString += "\r\n"
+	HeaderString.WriteString("\r\n")
 
-	_, err = c.Write([]byte(HeaderString))
+	_, err = c.Write([]byte(HeaderString.String()))
 
 	if err != nil {
 		return err

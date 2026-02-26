@@ -70,10 +70,11 @@ func (vc *Conn) ReadBuffer(buffer *buf.Buffer) error {
 		return err
 	}
 	if vc.readRemainingContent > 0 {
-		readSize := xrayBufSize          // at least read xrayBufSize
-		if buffer.FreeLen() > readSize { // input buffer larger than xrayBufSize, read as much as possible
-			readSize = buffer.FreeLen()
-		}
+		readSize := max(
+			// at least read xrayBufSize
+			buffer.FreeLen(),
+			// input buffer larger than xrayBufSize, read as much as possible
+			xrayBufSize)
 		if readSize > vc.readRemainingContent { // don't read out of bounds
 			readSize = vc.readRemainingContent
 		}

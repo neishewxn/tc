@@ -49,14 +49,14 @@ func (h *hMacCreator) Create() hash.Hash {
 }
 
 func createAuthID(cmdKey []byte, time int64) [16]byte {
-	buf := &bytes.Buffer{}
-	binary.Write(buf, binary.BigEndian, time)
+	buf := bytes.Buffer{}
+	binary.Write(&buf, binary.BigEndian, time)
 
 	random := make([]byte, 4)
 	rand.Read(random)
 	buf.Write(random)
 	zero := crc32.ChecksumIEEE(buf.Bytes())
-	binary.Write(buf, binary.BigEndian, zero)
+	binary.Write(&buf, binary.BigEndian, zero)
 
 	aesBlock, _ := aes.NewCipher(kdf(cmdKey[:], kdfSaltConstAuthIDEncryptionKey)[:16])
 	var result [16]byte
@@ -92,7 +92,7 @@ func sealVMessAEADHeader(key [16]byte, data []byte, t time.Time) []byte {
 		payloadHeaderAEADEncrypted = payloadHeaderAEAD.Seal(nil, payloadHeaderAEADNonce, data, generatedAuthID[:])
 	}
 
-	outputBuffer := &bytes.Buffer{}
+	outputBuffer := bytes.Buffer{}
 
 	outputBuffer.Write(generatedAuthID[:])
 	outputBuffer.Write(payloadHeaderLengthAEADEncrypted)

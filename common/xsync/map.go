@@ -54,10 +54,7 @@ const (
 // max number of additional goroutines that participate in cooperative resize;
 // "resize owner" goroutine isn't counted
 var maxResizeHelpers = func() int32 {
-	v := int32(parallelism() - 1)
-	if v < 1 {
-		v = 1
-	}
+	v := max(int32(parallelism()-1), 1)
 	if v > maxResizeHelpersLimit {
 		v = maxResizeHelpersLimit
 	}
@@ -740,10 +737,7 @@ func (m *Map[K, V]) helpResize(seq uint64) {
 func (m *Map[K, V]) transfer(table, newTable *mapTable[K, V]) {
 	tableLen := len(table.buckets)
 	newTableLen := len(newTable.buckets)
-	stride := (tableLen >> 3) / int(maxResizeHelpers)
-	if stride < minResizeTransferStride {
-		stride = minResizeTransferStride
-	}
+	stride := max((tableLen>>3)/int(maxResizeHelpers), minResizeTransferStride)
 	for {
 		// Claim work by incrementing resizeIdx.
 		nextIdx := m.resizeIdx.Add(int64(stride))
@@ -751,10 +745,7 @@ func (m *Map[K, V]) transfer(table, newTable *mapTable[K, V]) {
 		if start > tableLen {
 			break
 		}
-		end := int(nextIdx)
-		if end > tableLen {
-			end = tableLen
-		}
+		end := min(int(nextIdx), tableLen)
 		// Transfer buckets in this range.
 		total := 0
 		if newTableLen > tableLen {
@@ -785,7 +776,7 @@ func transferBucketUnsafe[K comparable, V any](
 	rootb := b
 	rootb.mu.Lock()
 	for {
-		for i := 0; i < entriesPerMapBucket; i++ {
+		for i := range entriesPerMapBucket {
 			if eptr := b.entries[i]; eptr != nil {
 				e := (*entry[K, V])(eptr)
 				hash := maphash.Comparable(destTable.seed, e.key)
@@ -810,7 +801,7 @@ func transferBucket[K comparable, V any](
 	rootb := b
 	rootb.mu.Lock()
 	for {
-		for i := 0; i < entriesPerMapBucket; i++ {
+		for i := range entriesPerMapBucket {
 			if eptr := b.entries[i]; eptr != nil {
 				e := (*entry[K, V])(eptr)
 				hash := maphash.Comparable(destTable.seed, e.key)
@@ -895,7 +886,7 @@ func (m *Map[K, V]) Size() int {
 // either locked or exclusively written to by the helper during resize.
 func appendToBucket[K comparable, V any](h2 uint8, e *entry[K, V], b *bucketPadded) {
 	for {
-		for i := 0; i < entriesPerMapBucket; i++ {
+		for i := range entriesPerMapBucket {
 			if b.entries[i] == nil {
 				b.meta = setByte(b.meta, h2, i)
 				b.entries[i] = unsafe.Pointer(e)
@@ -1015,7 +1006,7 @@ func (m *Map[K, V]) Stats() MapStats {
 		for {
 			nentriesLocal := 0
 			stats.Capacity += entriesPerMapBucket
-			for i := 0; i < entriesPerMapBucket; i++ {
+			for i := range entriesPerMapBucket {
 				if atomic.LoadPointer(&b.entries[i]) != nil {
 					stats.Size++
 					nentriesLocal++

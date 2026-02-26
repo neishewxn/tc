@@ -136,20 +136,20 @@ func GetGeneral() *config.General {
 
 	general := &config.General{
 		Inbound: config.Inbound{
-			Port:              ports.Port,
-			SocksPort:         ports.SocksPort,
-			RedirPort:         ports.RedirPort,
-			TProxyPort:        ports.TProxyPort,
-			MixedPort:         ports.MixedPort,
-			Tun:               listener.GetTunConf(),
-			Authentication:    authenticator,
-			SkipAuthPrefixes:  inbound.SkipAuthPrefixes(),
-			LanAllowedIPs:     inbound.AllowedIPs(),
-			LanDisAllowedIPs:  inbound.DisAllowedIPs(),
-			AllowLan:          listener.AllowLan(),
-			BindAddress:       listener.BindAddress(),
-			InboundTfo:        inbound.Tfo(),
-			InboundMPTCP:      inbound.MPTCP(),
+			Port:             ports.Port,
+			SocksPort:        ports.SocksPort,
+			RedirPort:        ports.RedirPort,
+			TProxyPort:       ports.TProxyPort,
+			MixedPort:        ports.MixedPort,
+			Tun:              listener.GetTunConf(),
+			Authentication:   authenticator,
+			SkipAuthPrefixes: inbound.SkipAuthPrefixes(),
+			LanAllowedIPs:    inbound.AllowedIPs(),
+			LanDisAllowedIPs: inbound.DisAllowedIPs(),
+			AllowLan:         listener.AllowLan(),
+			BindAddress:      listener.BindAddress(),
+			InboundTfo:       inbound.Tfo(),
+			InboundMPTCP:     inbound.MPTCP(),
 		},
 		Mode:         tunnel.Mode(),
 		UnifiedDelay: adapter.UnifiedDelay.Load(),
@@ -333,7 +333,6 @@ func loadProvider[T P.Provider](providers map[string]T) {
 	wg := sync.WaitGroup{}
 	ch := make(chan struct{}, concurrentCount)
 	for _, pv := range providers {
-		pv := pv
 		wg.Add(1)
 		ch <- struct{}{}
 		go func() {

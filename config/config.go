@@ -997,12 +997,7 @@ func verifySubRule(subRules map[string][]C.Rule) error {
 
 func verifySubRuleCircularReferences(n string, subRules map[string][]C.Rule, arr []string) error {
 	isInArray := func(v string, array []string) bool {
-		for _, c := range array {
-			if v == c {
-				return true
-			}
-		}
-		return false
+		return slices.Contains(array, v)
 	}
 
 	arr = append(arr, n)
@@ -1139,7 +1134,7 @@ func parseNameServer(servers []string, respectRules bool, preferH3 bool) ([]dns.
 
 		var proxyName string
 		params := map[string]string{}
-		for _, s := range strings.Split(u.Fragment, "&") {
+		for s := range strings.SplitSeq(u.Fragment, "&") {
 			arr := strings.SplitN(s, "=", 2)
 			switch len(arr) {
 			case 1:
@@ -1284,8 +1279,8 @@ func parseNameServerPolicy(nsPolicy *orderedmap.OrderedMap[string, any], rulePro
 					policy = append(policy, dns.Policy{Domain: newKey, NameServers: nameservers})
 				}
 			} else {
-				subkeys := strings.Split(k, ",")
-				for _, subkey := range subkeys {
+				subkeys := strings.SplitSeq(k, ",")
+				for subkey := range subkeys {
 					policy = append(policy, dns.Policy{Domain: subkey, NameServers: nameservers})
 				}
 			}

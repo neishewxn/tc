@@ -45,32 +45,32 @@ func NewConn(conn net.Conn, tlsConn net.Conn, userUUID uuid.UUID) (*Conn, error)
 			//log.Debugln("type tls")
 			tlsConn = underlying
 			c.netConn = underlying.NetConn()
-			t = reflect.TypeOf(underlying).Elem()
+			t = reflect.TypeFor[gotls.Conn]()
 			p = unsafe.Pointer(underlying)
 		case *tls.Conn:
 			//log.Debugln("type tls")
 			tlsConn = underlying
 			c.netConn = underlying.NetConn()
-			t = reflect.TypeOf(underlying).Elem()
+			t = reflect.TypeFor[tls.Conn]()
 			p = unsafe.Pointer(underlying)
 		case *tlsC.Conn:
 			//log.Debugln("type *tlsC.Conn")
 			tlsConn = underlying
 			c.netConn = underlying.NetConn()
-			t = reflect.TypeOf(underlying).Elem()
+			t = reflect.TypeFor[tlsC.Conn]()
 			p = unsafe.Pointer(underlying)
 		case *tlsC.UConn:
 			//log.Debugln("type *tlsC.UConn")
 			tlsConn = underlying
 			c.netConn = underlying.NetConn()
-			t = reflect.TypeOf(underlying.Conn).Elem()
+			t = reflect.TypeFor[tls.Conn]()
 			//log.Debugln("t:%v", t)
 			p = unsafe.Pointer(underlying.Conn)
 		case *encryption.CommonConn:
 			//log.Debugln("type *encryption.CommonConn")
 			tlsConn = underlying
 			c.netConn = underlying.Conn
-			t = reflect.TypeOf(underlying).Elem()
+			t = reflect.TypeFor[encryption.CommonConn]()
 			p = unsafe.Pointer(underlying)
 		}
 		if u, ok := upstream.(N.ReaderWithUpstream); !ok || !u.ReaderReplaceable() { // must replaceable
