@@ -154,19 +154,6 @@ func (t *Trojan) streamConnContext(ctx context.Context, c net.Conn, metadata *C.
 	return c, err
 }
 
-// func (t *Trojan) writeHeaderContext(ctx context.Context, c net.Conn, metadata *C.Metadata) (err error) {
-// 	if ctx.Done() != nil {
-// 		done := N.SetupContextForConn(ctx, c)
-// 		defer done(&err)
-// 	}
-// 	command := trojan.CommandTCP
-// 	if metadata.NetWork == C.UDP {
-// 		command = trojan.CommandUDP
-// 	}
-// 	err = trojan.WriteHeader(c, t.hexPassword, command, serializesSocksAddr(metadata))
-// 	return err
-// }
-
 // DialContext implements C.ProxyAdapter
 func (t *Trojan) DialContext(ctx context.Context, metadata *C.Metadata) (_ C.Conn, err error) {
 	var c net.Conn

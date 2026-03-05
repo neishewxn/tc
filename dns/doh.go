@@ -35,7 +35,6 @@ const (
 	// each host.  Note, that setting it to 1 may cause issues with Go's http
 	// implementation, see https://github.com/AdguardTeam/dnsproxy/issues/278.
 	dohMaxConnsPerHost = 2
-	dialTimeout        = 10 * time.Second
 
 	// dohMaxIdleConns controls the maximum number of connections being idle
 	// at the same time.
@@ -55,11 +54,6 @@ type dnsOverHTTPS struct {
 	// needed. Clients are safe for concurrent use by multiple goroutines.
 	client   *http.Client
 	clientMu sync.Mutex
-
-	// quicConfig is the QUIC configuration that is used if HTTP/3 is enabled
-	// for this upstream.
-	// quicConfig      *quic.Config
-	// quicConfigGuard sync.Mutex
 
 	url            *url.URL
 	httpVersions   []C.HTTPVersion
@@ -329,7 +323,7 @@ func (doh *dnsOverHTTPS) createClient(ctx context.Context) (*http.Client, error)
 // that this function will first attempt to establish a QUIC connection (if
 // HTTP3 is enabled in the upstream options).  If this attempt is successful,
 // it returns an HTTP3 transport, otherwise it returns the H1/H2 transport.
-func (doh *dnsOverHTTPS) createTransport(ctx context.Context) (t http.RoundTripper, err error) {
+func (doh *dnsOverHTTPS) createTransport(_ context.Context) (t http.RoundTripper, err error) {
 	transport := &http.Transport{
 		DisableCompression: true,
 		DialContext:        doh.dialer.DialContext,
@@ -384,31 +378,6 @@ func (doh *dnsOverHTTPS) createTransport(ctx context.Context) (t http.RoundTripp
 	return transport, nil
 }
 
-// probeTLS attempts to establish a TLS connection to the specified address. We
-// run probeQUIC and probeTLS in parallel and see which one is faster.
-func (doh *dnsOverHTTPS) probeTLS(ctx context.Context, tlsConfig *tls.Config, ch chan error) {
-	startTime := time.Now()
-
-	conn, err := doh.tlsDial(ctx, "tcp", tlsConfig)
-	if err != nil {
-		ch <- fmt.Errorf("opening TLS connection: %w", err)
-		return
-	}
-
-	// Ignore the error since there's no way we can use it for anything useful.
-	_ = conn.Close()
-
-	ch <- nil
-
-	elapsed := time.Since(startTime)
-	log.Debugln("elapsed on establishing a TLS connection: %s", elapsed)
-}
-
-// supportsH3 returns true if HTTP/3 is supported by this upstream.
-func (doh *dnsOverHTTPS) supportsH3() (ok bool) {
-	return false
-}
-
 // supportsHTTP returns true if HTTP/1.1 or HTTP2 is supported by this upstream.
 func (doh *dnsOverHTTPS) supportsHTTP() (ok bool) {
 	for _, v := range doh.supportedHTTPVersions() {
@@ -428,30 +397,4 @@ func (doh *dnsOverHTTPS) supportedHTTPVersions() (v []C.HTTPVersion) {
 	}
 
 	return v
-}
-
-// tlsDial is basically the same as tls.DialWithDialer, but we will call our own
-// dialContext function to get connection.
-func (doh *dnsOverHTTPS) tlsDial(ctx context.Context, network string, config *tls.Config) (*tls.Conn, error) {
-	// We're using bootstrapped address instead of what's passed
-	// to the function.
-	rawConn, err := doh.dialer.DialContext(ctx, network, doh.url.Host)
-	if err != nil {
-		return nil, err
-	}
-
-	// We want the timeout to cover the whole process: TCP connection and
-	// TLS handshake dialTimeout will be used as connection deadLine.
-	conn := tls.Client(rawConn, config)
-
-	ctx, cancel := context.WithTimeout(ctx, dialTimeout)
-	defer cancel()
-
-	err = conn.HandshakeContext(ctx)
-	if err != nil {
-		defer conn.Close()
-		return nil, err
-	}
-
-	return conn, nil
 }
