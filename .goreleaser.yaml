@@ -28,5 +28,4 @@ builds:
 
 archives:
   - name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}-{{ .Amd64 }}"
-    formats:
-      - tar.gz
+    format: zip
