@@ -20,8 +20,6 @@ type MixedOption struct {
 	PrivateKey     string        `inbound:"private-key,omitempty"`
 	ClientAuthType string        `inbound:"client-auth-type,omitempty"`
 	ClientAuthCert string        `inbound:"client-auth-cert,omitempty"`
-	EchKey         string        `inbound:"ech-key,omitempty"`
-	RealityConfig  RealityConfig `inbound:"reality-config,omitempty"`
 }
 
 func (o MixedOption) Equal(config C.InboundConfig) bool {
@@ -74,8 +72,6 @@ func (m *Mixed) Listen(tunnel C.Tunnel) error {
 				PrivateKey:     m.config.PrivateKey,
 				ClientAuthType: m.config.ClientAuthType,
 				ClientAuthCert: m.config.ClientAuthCert,
-				EchKey:         m.config.EchKey,
-				RealityConfig:  m.config.RealityConfig.Build(),
 			},
 			tunnel,
 			m.Additions()...,

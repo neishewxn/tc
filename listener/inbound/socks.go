@@ -13,14 +13,12 @@ import (
 
 type SocksOption struct {
 	BaseOption
-	Users          AuthUsers     `inbound:"users,omitempty"`
-	UDP            bool          `inbound:"udp,omitempty"`
-	Certificate    string        `inbound:"certificate,omitempty"`
-	PrivateKey     string        `inbound:"private-key,omitempty"`
-	ClientAuthType string        `inbound:"client-auth-type,omitempty"`
-	ClientAuthCert string        `inbound:"client-auth-cert,omitempty"`
-	EchKey         string        `inbound:"ech-key,omitempty"`
-	RealityConfig  RealityConfig `inbound:"reality-config,omitempty"`
+	Users          AuthUsers `inbound:"users,omitempty"`
+	UDP            bool      `inbound:"udp,omitempty"`
+	Certificate    string    `inbound:"certificate,omitempty"`
+	PrivateKey     string    `inbound:"private-key,omitempty"`
+	ClientAuthType string    `inbound:"client-auth-type,omitempty"`
+	ClientAuthCert string    `inbound:"client-auth-cert,omitempty"`
 }
 
 func (o SocksOption) Equal(config C.InboundConfig) bool {
@@ -94,8 +92,6 @@ func (s *Socks) Listen(tunnel C.Tunnel) error {
 				PrivateKey:     s.config.PrivateKey,
 				ClientAuthType: s.config.ClientAuthType,
 				ClientAuthCert: s.config.ClientAuthCert,
-				EchKey:         s.config.EchKey,
-				RealityConfig:  s.config.RealityConfig.Build(),
 			},
 			tunnel,
 			s.Additions()...,

@@ -1,7 +1,6 @@
 package socks
 
 import (
-	"errors"
 	"io"
 	"net"
 
@@ -12,7 +11,6 @@ import (
 	C "github.com/metacubex/mihomo/constant"
 	authStore "github.com/metacubex/mihomo/listener/auth"
 	LC "github.com/metacubex/mihomo/listener/config"
-	"github.com/metacubex/mihomo/listener/reality"
 	"github.com/metacubex/mihomo/ntp"
 	"github.com/metacubex/mihomo/transport/socks4"
 	"github.com/metacubex/mihomo/transport/socks5"
@@ -62,7 +60,6 @@ func NewWithConfig(config LC.AuthServer, tunnel C.Tunnel, additions ...inbound.A
 	}
 
 	tlsConfig := &tls.Config{Time: ntp.Now}
-	var realityBuilder *reality.Builder
 
 	if config.Certificate != "" && config.PrivateKey != "" {
 		certLoader, err := ca.NewTLSKeyPairLoader(config.Certificate, config.PrivateKey)
@@ -86,22 +83,7 @@ func NewWithConfig(config LC.AuthServer, tunnel C.Tunnel, additions ...inbound.A
 		}
 		tlsConfig.ClientCAs = pool
 	}
-	if config.RealityConfig.PrivateKey != "" {
-		if tlsConfig.GetCertificate != nil {
-			return nil, errors.New("certificate is unavailable in reality")
-		}
-		if tlsConfig.ClientAuth != tls.NoClientCert {
-			return nil, errors.New("client-auth is unavailable in reality")
-		}
-		realityBuilder, err = config.RealityConfig.Build(tunnel)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if realityBuilder != nil {
-		l = realityBuilder.NewListener(l)
-	} else if tlsConfig.GetCertificate != nil {
+	if tlsConfig.GetCertificate != nil {
 		l = tls.NewListener(l, tlsConfig)
 	}
 
