@@ -18,6 +18,7 @@ import (
 var globalSrv *Service
 var globalMu sync.Mutex
 
+
 type Service struct {
 	server         M.Socksaddr
 	dialer         proxydialer.SingDialer
