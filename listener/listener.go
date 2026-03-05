@@ -25,19 +25,19 @@ var (
 	allowLan    = false
 	bindAddress = "*"
 
-	socksListener       *socks.Listener
-	socksUDPListener    *socks.UDPListener
-	httpListener        *http.Listener
-	redirListener       *redir.Listener
-	redirUDPListener    *tproxy.UDPListener
-	tproxyListener      *tproxy.Listener
-	tproxyUDPListener   *tproxy.UDPListener
-	mixedListener       *mixed.Listener
-	mixedUDPLister      *socks.UDPListener
-	tunnelTCPListeners  = map[string]*LT.Listener{}
-	tunnelUDPListeners  = map[string]*LT.PacketConn{}
-	inboundListeners    = map[string]C.InboundListener{}
-	tunLister           *sing_tun.Listener
+	socksListener      *socks.Listener
+	socksUDPListener   *socks.UDPListener
+	httpListener       *http.Listener
+	redirListener      *redir.Listener
+	redirUDPListener   *tproxy.UDPListener
+	tproxyListener     *tproxy.Listener
+	tproxyUDPListener  *tproxy.UDPListener
+	mixedListener      *mixed.Listener
+	mixedUDPLister     *socks.UDPListener
+	tunnelTCPListeners = map[string]*LT.Listener{}
+	tunnelUDPListeners = map[string]*LT.PacketConn{}
+	inboundListeners   = map[string]C.InboundListener{}
+	tunLister          *sing_tun.Listener
 
 	// lock for recreate function
 	socksMux   sync.Mutex
@@ -49,15 +49,15 @@ var (
 	inboundMux sync.Mutex
 	tunMux     sync.Mutex
 
-	LastTunConf  LC.Tun
+	LastTunConf LC.Tun
 )
 
 type Ports struct {
-	Port              int    `json:"port"`
-	SocksPort         int    `json:"socks-port"`
-	RedirPort         int    `json:"redir-port"`
-	TProxyPort        int    `json:"tproxy-port"`
-	MixedPort         int    `json:"mixed-port"`
+	Port       int `json:"port"`
+	SocksPort  int `json:"socks-port"`
+	RedirPort  int `json:"redir-port"`
+	TProxyPort int `json:"tproxy-port"`
+	MixedPort  int `json:"mixed-port"`
 }
 
 func GetTunConf() LC.Tun {
