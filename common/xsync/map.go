@@ -54,10 +54,7 @@ const (
 // max number of additional goroutines that participate in cooperative resize;
 // "resize owner" goroutine isn't counted
 var maxResizeHelpers = func() int32 {
-	v := max(int32(parallelism()-1), 1)
-	if v > maxResizeHelpersLimit {
-		v = maxResizeHelpersLimit
-	}
+	v := min(max(int32(parallelism()-1), 1), maxResizeHelpersLimit)
 	return v
 }()
 
