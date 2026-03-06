@@ -310,7 +310,7 @@ func parallelDialContext(ctx context.Context, network string, ips []netip.Addr, 
 		go racer(ctx, ip)
 	}
 	var errs []error
-	for range ips {
+	for i := 0; i < len(ips); i++ {
 		res := <-results
 		if res.error == nil {
 			return res.Conn, nil

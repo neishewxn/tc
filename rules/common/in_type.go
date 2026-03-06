@@ -2,7 +2,6 @@ package common
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 
 	C "github.com/metacubex/mihomo/constant"
@@ -16,8 +15,10 @@ type InType struct {
 }
 
 func (u *InType) Match(metadata *C.Metadata, helper C.RuleMatchHelper) (bool, string) {
-	if slices.Contains(u.types, metadata.Type) {
-		return true, u.adapter
+	for _, tp := range u.types {
+		if metadata.Type == tp {
+			return true, u.adapter
+		}
 	}
 	return false, ""
 }

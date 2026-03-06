@@ -40,7 +40,7 @@ type ListenerConfig struct {
 
 type MuxOption struct {
 	Padding bool          `yaml:"padding" json:"padding,omitempty"`
-	Brutal  BrutalOptions `yaml:"brutal" json:"brutal"`
+	Brutal  BrutalOptions `yaml:"brutal" json:"brutal,omitempty"`
 }
 
 type BrutalOptions struct {

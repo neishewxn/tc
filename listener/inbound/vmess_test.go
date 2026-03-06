@@ -68,12 +68,35 @@ func TestInboundVMess_Basic(t *testing.T) {
 
 func testInboundVMessTLS(t *testing.T, inboundOptions inbound.VmessOption, outboundOptions outbound.VmessOption) {
 	testInboundVMess(t, inboundOptions, outboundOptions)
+	t.Run("ECH", func(t *testing.T) {
+		inboundOptions := inboundOptions
+		outboundOptions := outboundOptions
+		inboundOptions.EchKey = echKeyPem
+		outboundOptions.ECHOpts = outbound.ECHOptions{
+			Enable: true,
+			Config: echConfigBase64,
+		}
+		testInboundVMess(t, inboundOptions, outboundOptions)
+	})
 	t.Run("mTLS", func(t *testing.T) {
 		inboundOptions := inboundOptions
 		outboundOptions := outboundOptions
 		inboundOptions.ClientAuthCert = tlsAuthCertificate
 		outboundOptions.Certificate = tlsAuthCertificate
 		outboundOptions.PrivateKey = tlsAuthPrivateKey
+		testInboundVMess(t, inboundOptions, outboundOptions)
+	})
+	t.Run("mTLS+ECH", func(t *testing.T) {
+		inboundOptions := inboundOptions
+		outboundOptions := outboundOptions
+		inboundOptions.ClientAuthCert = tlsAuthCertificate
+		outboundOptions.Certificate = tlsAuthCertificate
+		outboundOptions.PrivateKey = tlsAuthPrivateKey
+		inboundOptions.EchKey = echKeyPem
+		outboundOptions.ECHOpts = outbound.ECHOptions{
+			Enable: true,
+			Config: echConfigBase64,
+		}
 		testInboundVMess(t, inboundOptions, outboundOptions)
 	})
 }
@@ -195,6 +218,37 @@ func TestInboundVMess_Wss2(t *testing.T) {
 	testInboundVMessTLS(t, inboundOptions, outboundOptions)
 }
 
+func TestInboundVMess_Grpc1(t *testing.T) {
+	inboundOptions := inbound.VmessOption{
+		Certificate:     tlsCertificate,
+		PrivateKey:      tlsPrivateKey,
+		GrpcServiceName: "GunService",
+	}
+	outboundOptions := outbound.VmessOption{
+		TLS:         true,
+		Fingerprint: tlsFingerprint,
+		Network:     "grpc",
+		GrpcOpts:    outbound.GrpcOptions{GrpcServiceName: "GunService"},
+	}
+	testInboundVMessTLS(t, inboundOptions, outboundOptions)
+}
+
+func TestInboundVMess_Grpc2(t *testing.T) {
+	inboundOptions := inbound.VmessOption{
+		Certificate:     tlsCertificate,
+		PrivateKey:      tlsPrivateKey,
+		WsPath:          "/ws",
+		GrpcServiceName: "GunService",
+	}
+	outboundOptions := outbound.VmessOption{
+		TLS:         true,
+		Fingerprint: tlsFingerprint,
+		Network:     "grpc",
+		GrpcOpts:    outbound.GrpcOptions{GrpcServiceName: "GunService"},
+	}
+	testInboundVMessTLS(t, inboundOptions, outboundOptions)
+}
+
 func TestInboundVMess_Reality(t *testing.T) {
 	inboundOptions := inbound.VmessOption{
 		RealityConfig: inbound.RealityConfig{
@@ -212,6 +266,30 @@ func TestInboundVMess_Reality(t *testing.T) {
 			ShortID:   realityShortid,
 		},
 		ClientFingerprint: "chrome",
+	}
+	testInboundVMess(t, inboundOptions, outboundOptions)
+}
+
+func TestInboundVMess_Reality_Grpc(t *testing.T) {
+	inboundOptions := inbound.VmessOption{
+		RealityConfig: inbound.RealityConfig{
+			Dest:        net.JoinHostPort(realityDest, "443"),
+			PrivateKey:  realityPrivateKey,
+			ShortID:     []string{realityShortid},
+			ServerNames: []string{realityDest},
+		},
+		GrpcServiceName: "GunService",
+	}
+	outboundOptions := outbound.VmessOption{
+		TLS:        true,
+		ServerName: realityDest,
+		RealityOpts: outbound.RealityOptions{
+			PublicKey: realityPublickey,
+			ShortID:   realityShortid,
+		},
+		ClientFingerprint: "chrome",
+		Network:           "grpc",
+		GrpcOpts:          outbound.GrpcOptions{GrpcServiceName: "GunService"},
 	}
 	testInboundVMess(t, inboundOptions, outboundOptions)
 }

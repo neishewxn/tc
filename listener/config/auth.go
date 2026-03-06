@@ -14,5 +14,6 @@ type AuthServer struct {
 	PrivateKey     string
 	ClientAuthType string
 	ClientAuthCert string
+	EchKey         string
 	RealityConfig  reality.Config
 }

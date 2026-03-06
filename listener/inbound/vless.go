@@ -68,6 +68,7 @@ func NewVless(options *VlessOption) (*Vless, error) {
 			PrivateKey:      options.PrivateKey,
 			ClientAuthType:  options.ClientAuthType,
 			ClientAuthCert:  options.ClientAuthCert,
+			EchKey:          options.EchKey,
 			RealityConfig:   options.RealityConfig.Build(),
 			MuxOption:       options.MuxOption.Build(),
 		},

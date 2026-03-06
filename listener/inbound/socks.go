@@ -84,7 +84,7 @@ func (s *Socks) Address() string {
 
 // Listen implements constant.InboundListener
 func (s *Socks) Listen(tunnel C.Tunnel) error {
-	for addr := range strings.SplitSeq(s.RawAddress(), ",") {
+	for _, addr := range strings.Split(s.RawAddress(), ",") {
 		stl, err := socks.NewWithConfig(
 			LC.AuthServer{
 				Enable:         true,
@@ -94,6 +94,7 @@ func (s *Socks) Listen(tunnel C.Tunnel) error {
 				PrivateKey:     s.config.PrivateKey,
 				ClientAuthType: s.config.ClientAuthType,
 				ClientAuthCert: s.config.ClientAuthCert,
+				EchKey:         s.config.EchKey,
 				RealityConfig:  s.config.RealityConfig.Build(),
 			},
 			tunnel,

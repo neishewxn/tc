@@ -9,7 +9,7 @@ import (
 	"github.com/metacubex/mihomo/component/resolver"
 	"github.com/metacubex/mihomo/log"
 
-	"slices"
+	"golang.org/x/exp/slices"
 )
 
 func (c *systemClient) getDnsClients() ([]dnsClient, error) {

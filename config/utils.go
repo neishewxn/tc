@@ -5,7 +5,6 @@ import (
 	"net"
 	"net/netip"
 	"os"
-	"slices"
 	"strconv"
 
 	"github.com/metacubex/mihomo/adapter/outboundgroup"
@@ -179,8 +178,10 @@ func validateDialerProxies(proxies map[string]C.Proxy) error {
 // validateDialerProxiesHasCycle performs DFS to detect if there's a cycle starting from current proxy
 func validateDialerProxiesHasCycle(current string, graph map[string]string, visited map[string]bool, path []string) bool {
 	// check if current is already in path (cycle detected)
-	if slices.Contains(path, current) {
-		return true
+	for _, p := range path {
+		if p == current {
+			return true
+		}
 	}
 
 	// already visited and no cycle

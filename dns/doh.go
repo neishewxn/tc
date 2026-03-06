@@ -9,7 +9,6 @@ import (
 	"net"
 	"net/url"
 	"runtime"
-	"slices"
 	"strconv"
 	"sync"
 	"time"
@@ -23,6 +22,7 @@ import (
 	"github.com/metacubex/quic-go/http3"
 	"github.com/metacubex/tls"
 	D "github.com/miekg/dns"
+	"golang.org/x/exp/slices"
 )
 
 // Values to configure HTTP and HTTP/2 transport.
@@ -668,13 +668,19 @@ func (doh *dnsOverHTTPS) probeTLS(ctx context.Context, tlsConfig *tls.Config, ch
 
 	ch <- nil
 
-	elapsed := time.Since(startTime)
+	elapsed := time.Now().Sub(startTime)
 	log.Debugln("elapsed on establishing a TLS connection: %s", elapsed)
 }
 
 // supportsH3 returns true if HTTP/3 is supported by this upstream.
 func (doh *dnsOverHTTPS) supportsH3() (ok bool) {
-	return slices.Contains(doh.supportedHTTPVersions(), C.HTTPVersion3)
+	for _, v := range doh.supportedHTTPVersions() {
+		if v == C.HTTPVersion3 {
+			return true
+		}
+	}
+
+	return false
 }
 
 // supportsHTTP returns true if HTTP/1.1 or HTTP2 is supported by this upstream.

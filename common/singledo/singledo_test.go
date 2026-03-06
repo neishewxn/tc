@@ -24,7 +24,7 @@ func TestBasic(t *testing.T) {
 	var wg sync.WaitGroup
 	const n = 5
 	wg.Add(n)
-	for range n {
+	for i := 0; i < n; i++ {
 		go func() {
 			_, _, shard := single.Do(call)
 			if shard {

@@ -9,6 +9,7 @@ import (
 
 	N "github.com/metacubex/mihomo/common/net"
 	"github.com/metacubex/mihomo/component/ca"
+	"github.com/metacubex/mihomo/component/ech"
 	tlsC "github.com/metacubex/mihomo/component/tls"
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/transport/gun"
@@ -31,6 +32,7 @@ type Trojan struct {
 	transport    *gun.TransportWrap
 
 	realityConfig *tlsC.RealityConfig
+	echConfig     *ech.Config
 
 	ssCipher core.Cipher
 }
@@ -49,7 +51,9 @@ type TrojanOption struct {
 	PrivateKey        string         `proxy:"private-key,omitempty"`
 	UDP               bool           `proxy:"udp,omitempty"`
 	Network           string         `proxy:"network,omitempty"`
+	ECHOpts           ECHOptions     `proxy:"ech-opts,omitempty"`
 	RealityOpts       RealityOptions `proxy:"reality-opts,omitempty"`
+	GrpcOpts          GrpcOptions    `proxy:"grpc-opts,omitempty"`
 	WSOpts            WSOptions      `proxy:"ws-opts,omitempty"`
 	SSOpts            TrojanSSOption `proxy:"ss-opts,omitempty"`
 	ClientFingerprint string         `proxy:"client-fingerprint,omitempty"`
@@ -77,6 +81,7 @@ func (t *Trojan) StreamConnContext(ctx context.Context, c net.Conn, metadata *C.
 			V2rayHttpUpgrade:         t.option.WSOpts.V2rayHttpUpgrade,
 			V2rayHttpUpgradeFastOpen: t.option.WSOpts.V2rayHttpUpgradeFastOpen,
 			ClientFingerprint:        t.option.ClientFingerprint,
+			ECHConfig:                t.echConfig,
 			Headers:                  http.Header{},
 		}
 
@@ -112,6 +117,8 @@ func (t *Trojan) StreamConnContext(ctx context.Context, c net.Conn, metadata *C.
 		}
 
 		c, err = vmess.StreamWebsocketConn(ctx, c, wsOpts)
+	case "grpc":
+		c, err = gun.StreamGunWithConn(c, t.gunTLSConfig, t.gunConfig, t.echConfig, t.realityConfig)
 	default:
 		// default tcp network
 		// handle TLS
@@ -127,6 +134,7 @@ func (t *Trojan) StreamConnContext(ctx context.Context, c net.Conn, metadata *C.
 			PrivateKey:        t.option.PrivateKey,
 			ClientFingerprint: t.option.ClientFingerprint,
 			NextProtos:        alpn,
+			ECH:               t.echConfig,
 			Reality:           t.realityConfig,
 		})
 	}
@@ -152,6 +160,19 @@ func (t *Trojan) streamConnContext(ctx context.Context, c net.Conn, metadata *C.
 	}
 	err = trojan.WriteHeader(c, t.hexPassword, command, serializesSocksAddr(metadata))
 	return c, err
+}
+
+func (t *Trojan) writeHeaderContext(ctx context.Context, c net.Conn, metadata *C.Metadata) (err error) {
+	if ctx.Done() != nil {
+		done := N.SetupContextForConn(ctx, c)
+		defer done(&err)
+	}
+	command := trojan.CommandTCP
+	if metadata.NetWork == C.UDP {
+		command = trojan.CommandUDP
+	}
+	err = trojan.WriteHeader(c, t.hexPassword, command, serializesSocksAddr(metadata))
+	return err
 }
 
 // DialContext implements C.ProxyAdapter
@@ -287,6 +308,11 @@ func NewTrojan(option TrojanOption) (*Trojan, error) {
 		return nil, err
 	}
 
+	t.echConfig, err = option.ECHOpts.Parse()
+	if err != nil {
+		return nil, err
+	}
+
 	if option.SSOpts.Enabled {
 		if option.SSOpts.Password == "" {
 			return nil, errors.New("empty password")
@@ -300,5 +326,41 @@ func NewTrojan(option TrojanOption) (*Trojan, error) {
 		}
 		t.ssCipher = ciph
 	}
+
+	if option.Network == "grpc" {
+		dialFn := func(ctx context.Context, network, addr string) (net.Conn, error) {
+			c, err := t.dialer.DialContext(ctx, "tcp", t.addr)
+			if err != nil {
+				return nil, fmt.Errorf("%s connect error: %s", t.addr, err.Error())
+			}
+			return c, nil
+		}
+
+		tlsConfig, err := ca.GetTLSConfig(ca.Option{
+			TLSConfig: &tls.Config{
+				NextProtos:         option.ALPN,
+				MinVersion:         tls.VersionTLS12,
+				InsecureSkipVerify: option.SkipCertVerify,
+				ServerName:         option.SNI,
+			},
+			Fingerprint: option.Fingerprint,
+			Certificate: option.Certificate,
+			PrivateKey:  option.PrivateKey,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		t.transport = gun.NewHTTP2Client(dialFn, tlsConfig, option.ClientFingerprint, t.echConfig, t.realityConfig)
+
+		t.gunTLSConfig = tlsConfig
+		t.gunConfig = &gun.Config{
+			ServiceName:       option.GrpcOpts.GrpcServiceName,
+			UserAgent:         option.GrpcOpts.GrpcUserAgent,
+			Host:              option.SNI,
+			ClientFingerprint: option.ClientFingerprint,
+		}
+	}
+
 	return t, nil
 }

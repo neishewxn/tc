@@ -3,13 +3,14 @@ package provider
 import (
 	"errors"
 	"io"
-	"slices"
 	"strings"
 
 	"github.com/metacubex/mihomo/component/trie"
 	C "github.com/metacubex/mihomo/constant"
 	P "github.com/metacubex/mihomo/constant/provider"
 	"github.com/metacubex/mihomo/log"
+
+	"golang.org/x/exp/slices"
 )
 
 type domainStrategy struct {

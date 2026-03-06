@@ -5,17 +5,18 @@ import (
 	"errors"
 	"fmt"
 	"net/netip"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/metacubex/mihomo/common/picker"
+	"github.com/metacubex/mihomo/component/ech/echparser"
 	"github.com/metacubex/mihomo/component/resolver"
 	"github.com/metacubex/mihomo/log"
 
 	D "github.com/miekg/dns"
 	"github.com/samber/lo"
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -293,6 +294,12 @@ func msgToHTTPSRRInfo(msg *D.Msg) string {
 				case *D.SVCBIPv6Hint:
 					if len(v.Hint) > 0 {
 						hasIPv6 = true
+					}
+				case *D.SVCBECHConfig:
+					if publicName == "" && len(v.ECH) > 0 {
+						if cfgs, err := echparser.ParseECHConfigList(v.ECH); err == nil && len(cfgs) > 0 {
+							publicName = string(cfgs[0].PublicName)
+						}
 					}
 				}
 			}

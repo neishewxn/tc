@@ -2,11 +2,11 @@ package config
 
 import (
 	"net/netip"
-	"slices"
 
 	C "github.com/metacubex/mihomo/constant"
 
 	"go4.org/netipx"
+	"golang.org/x/exp/slices"
 )
 
 type Tun struct {
