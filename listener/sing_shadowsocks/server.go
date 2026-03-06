@@ -19,7 +19,6 @@ import (
 	shadowsocks "github.com/metacubex/sing-shadowsocks"
 	"github.com/metacubex/sing-shadowsocks/shadowaead"
 	"github.com/metacubex/sing-shadowsocks/shadowaead_2022"
-	shadowtls "github.com/metacubex/sing-shadowtls"
 	"github.com/metacubex/sing/common"
 	"github.com/metacubex/sing/common/buf"
 	"github.com/metacubex/sing/common/bufio"
@@ -33,23 +32,9 @@ type Listener struct {
 	listeners    []net.Listener
 	udpListeners []net.PacketConn
 	service      shadowsocks.Service
-	shadowTLS    *shadowtls.Service
 }
 
 var _listener *Listener
-
-// shadowTLSService is a wrapper for shadowsocks.Service to support shadowTLS.
-type shadowTLSService struct {
-	shadowsocks.Service
-	shadowTLS *shadowtls.Service
-}
-
-func (s *shadowTLSService) NewConnection(ctx context.Context, conn net.Conn, metadata M.Metadata) error {
-	if s.shadowTLS != nil {
-		return s.shadowTLS.NewConnection(ctx, conn, metadata)
-	}
-	return s.Service.NewConnection(ctx, conn, metadata)
-}
 
 func New(config LC.ShadowsocksServer, tunnel C.Tunnel, additions ...inbound.Addition) (C.MultiAddrListener, error) {
 	var sl *Listener

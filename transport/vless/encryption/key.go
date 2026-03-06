@@ -2,12 +2,12 @@ package encryption
 
 import (
 	"crypto/ecdh"
+	"crypto/mlkem"
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
 
 	"github.com/metacubex/blake3"
-	"github.com/metacubex/mlkem"
 )
 
 const MLKEM768SeedLength = mlkem.SeedSize

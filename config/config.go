@@ -136,7 +136,6 @@ type NTP struct {
 	Port          int
 	Interval      int
 	DialerProxy   string
-	WriteToSystem bool
 }
 
 // DNS config
@@ -259,7 +258,6 @@ type RawNTP struct {
 	Port          int    `yaml:"port" json:"port"`
 	Interval      int    `yaml:"interval" json:"interval"`
 	DialerProxy   string `yaml:"dialer-proxy" json:"dialer-proxy"`
-	WriteToSystem bool   `yaml:"write-to-system" json:"write-to-system"`
 }
 
 type RawTun struct {
@@ -520,7 +518,6 @@ func DefaultRawConfig() *RawConfig {
 		},
 		NTP: RawNTP{
 			Enable:        false,
-			WriteToSystem: false,
 			Server:        "time.apple.com",
 			Port:          123,
 			Interval:      30,
@@ -823,7 +820,6 @@ func parseNTP(cfg *RawConfig) (*NTP, error) {
 		Port:          cfg.NTP.Port,
 		Interval:      cfg.NTP.Interval,
 		DialerProxy:   cfg.NTP.DialerProxy,
-		WriteToSystem: cfg.NTP.WriteToSystem,
 	}, nil
 }
 

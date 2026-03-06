@@ -2,7 +2,6 @@ package executor
 
 import (
 	"fmt"
-	"net"
 	"net/netip"
 	"os"
 	"runtime"
@@ -39,7 +38,6 @@ import (
 	"github.com/metacubex/mihomo/listener/inner"
 	"github.com/metacubex/mihomo/listener/tproxy"
 	"github.com/metacubex/mihomo/log"
-	"github.com/metacubex/mihomo/ntp/ntp"
 	"github.com/metacubex/mihomo/tunnel"
 )
 
@@ -103,7 +101,6 @@ func ApplyConfig(cfg *config.Config, force bool) {
 	updateSniffer(cfg.Sniffer)
 	updateHosts(cfg.Hosts)
 	updateGeneral(cfg.General, true)
-	updateNTP(cfg.NTP)
 	updateDNS(cfg.DNS, cfg.General.IPv6)
 	updateListeners(cfg.General, cfg.Listeners, force)
 	updateTun(cfg.General) // tun should not care "force"
@@ -219,19 +216,6 @@ func updateExperimental(c *config.Experimental) {
 		_ = os.Setenv("QUIC_GO_DISABLE_ECN", strconv.FormatBool(true))
 	}
 	resolver.SetIP4PEnable(c.IP4PEnable)
-}
-
-func updateNTP(c *config.NTP) {
-	if c.Enable {
-		ntp.ReCreateNTPService(
-			net.JoinHostPort(c.Server, strconv.Itoa(c.Port)),
-			time.Duration(c.Interval),
-			c.DialerProxy,
-			c.WriteToSystem,
-		)
-	} else {
-		ntp.ReCreateNTPService("", 0, "", false)
-	}
 }
 
 func updateDNS(c *config.DNS, generalIPv6 bool) {
