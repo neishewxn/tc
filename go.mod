@@ -8,7 +8,7 @@ require (
 	github.com/gobwas/ws v1.4.0
 	github.com/gofrs/uuid/v5 v5.4.0
 	github.com/golang/snappy v1.0.0
-	github.com/insomniacslk/dhcp v0.0.0-20250109001534-8abf58130905
+	github.com/insomniacslk/dhcp v0.0.0-20260220084031-5adc3eb26f91
 	github.com/klauspost/compress v1.18.4
 	github.com/mdlayher/netlink v1.9.0
 	github.com/metacubex/bart v0.26.0
@@ -29,11 +29,11 @@ require (
 	github.com/metacubex/sing-shadowsocks v0.2.12
 	github.com/metacubex/sing-shadowsocks2 v0.2.7
 	github.com/metacubex/sing-shadowtls v0.0.0-20250503063515-5d9f966d17a2
-	github.com/metacubex/sing-tun v0.4.15
+	github.com/metacubex/sing-tun v0.4.16
 	github.com/metacubex/sing-vmess v0.2.5
 	github.com/metacubex/sing-wireguard v0.0.0-20250503063753-2dc62acc626f
 	github.com/metacubex/smux v0.0.0-20260105030934-d0c8756d3141
-	github.com/metacubex/tfo-go v0.0.0-20251130171125-413e892ac443
+	github.com/metacubex/tfo-go v0.0.0-20251204144243-738de9e3cd15
 	github.com/metacubex/tls v0.1.4
 	github.com/metacubex/utls v1.8.4
 	github.com/metacubex/wireguard-go v0.0.0-20250820062549-a6cecdd7f57f
@@ -41,8 +41,8 @@ require (
 	github.com/mroth/weightedrand/v2 v2.1.0
 	github.com/openacid/low v0.1.21
 	github.com/oschwald/maxminddb-golang v1.13.1
-	github.com/sagernet/netlink v0.0.0-20240612041022-b9a21c07ac6a
-	github.com/samber/lo v1.52.0
+	github.com/sagernet/netlink v0.0.0-20240916134442-83396419aa8b
+	github.com/samber/lo v1.53.0
 	github.com/sirupsen/logrus v1.9.4
 	github.com/stretchr/testify v1.11.1
 	github.com/vmihailenco/msgpack/v5 v5.4.1

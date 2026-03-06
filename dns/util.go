@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/netip"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -16,7 +17,6 @@ import (
 
 	D "github.com/miekg/dns"
 	"github.com/samber/lo"
-	"golang.org/x/exp/slices"
 )
 
 const (

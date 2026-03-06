@@ -8,6 +8,7 @@ import (
 	"net/netip"
 	"os"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -33,7 +34,6 @@ import (
 
 	"go4.org/netipx"
 	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
 )
 
 var InterfaceName = "Meta"

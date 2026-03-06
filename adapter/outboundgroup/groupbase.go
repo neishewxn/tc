@@ -16,8 +16,9 @@ import (
 	"github.com/metacubex/mihomo/log"
 	"github.com/metacubex/mihomo/tunnel"
 
+	"slices"
+
 	"github.com/dlclark/regexp2"
-	"golang.org/x/exp/slices"
 )
 
 type GroupBase struct {

@@ -7,6 +7,7 @@ import (
 	"net/netip"
 	"net/url"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 	_ "unsafe"
@@ -38,8 +39,6 @@ import (
 	RP "github.com/metacubex/mihomo/rules/provider"
 	RW "github.com/metacubex/mihomo/rules/wrapper"
 	T "github.com/metacubex/mihomo/tunnel"
-
-	"golang.org/x/exp/slices"
 )
 
 // General config

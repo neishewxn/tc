@@ -4,12 +4,11 @@ package dns
 
 import (
 	"net"
+	"slices"
 	"time"
 
 	"github.com/metacubex/mihomo/component/resolver"
 	"github.com/metacubex/mihomo/log"
-
-	"golang.org/x/exp/slices"
 )
 
 func (c *systemClient) getDnsClients() ([]dnsClient, error) {

@@ -2,11 +2,10 @@ package common
 
 import (
 	"errors"
+	"slices"
 	"strings"
 
 	C "github.com/metacubex/mihomo/constant"
-
-	"golang.org/x/exp/slices"
 )
 
 var (

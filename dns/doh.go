@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/url"
 	"runtime"
+	"slices"
 	"strconv"
 	"sync"
 	"time"
@@ -22,7 +23,6 @@ import (
 	"github.com/metacubex/quic-go/http3"
 	"github.com/metacubex/tls"
 	D "github.com/miekg/dns"
-	"golang.org/x/exp/slices"
 )
 
 // Values to configure HTTP and HTTP/2 transport.
