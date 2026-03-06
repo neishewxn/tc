@@ -84,24 +84,6 @@ type gostObfsOption struct {
 	Mux            bool              `obfs:"mux,omitempty"`
 }
 
-type shadowTLSOption struct {
-	Password       string   `obfs:"password,omitempty"`
-	Host           string   `obfs:"host"`
-	Fingerprint    string   `obfs:"fingerprint,omitempty"`
-	Certificate    string   `obfs:"certificate,omitempty"`
-	PrivateKey     string   `obfs:"private-key,omitempty"`
-	SkipCertVerify bool     `obfs:"skip-cert-verify,omitempty"`
-	Version        int      `obfs:"version,omitempty"`
-	ALPN           []string `obfs:"alpn,omitempty"`
-}
-
-type restlsOption struct {
-	Password     string `obfs:"password"`
-	Host         string `obfs:"host"`
-	VersionHint  string `obfs:"version-hint"`
-	RestlsScript string `obfs:"restls-script,omitempty"`
-}
-
 type kcpTunOption struct {
 	Key          string `obfs:"key,omitempty"`
 	Crypt        string `obfs:"crypt,omitempty"`

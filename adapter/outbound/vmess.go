@@ -63,7 +63,6 @@ type VmessOption struct {
 	RealityOpts         RealityOptions `proxy:"reality-opts,omitempty"`
 	HTTPOpts            HTTPOptions    `proxy:"http-opts,omitempty"`
 	HTTP2Opts           HTTP2Options   `proxy:"h2-opts,omitempty"`
-	GrpcOpts            GrpcOptions    `proxy:"grpc-opts,omitempty"`
 	WSOpts              WSOptions      `proxy:"ws-opts,omitempty"`
 	PacketAddr          bool           `proxy:"packet-addr,omitempty"`
 	XUDP                bool           `proxy:"xudp,omitempty"`
@@ -82,11 +81,6 @@ type HTTPOptions struct {
 type HTTP2Options struct {
 	Host []string `proxy:"host,omitempty"`
 	Path string   `proxy:"path,omitempty"`
-}
-
-type GrpcOptions struct {
-	GrpcServiceName string `proxy:"grpc-service-name,omitempty"`
-	GrpcUserAgent   string `proxy:"grpc-user-agent,omitempty"`
 }
 
 type WSOptions struct {
@@ -452,53 +446,8 @@ func NewVmess(option VmessOption) (*Vmess, error) {
 		return nil, err
 	}
 
-	switch option.Network {
-	case "h2":
-		if len(option.HTTP2Opts.Host) == 0 {
-			option.HTTP2Opts.Host = append(option.HTTP2Opts.Host, "www.example.com")
-		}
-	case "grpc":
-		dialFn := func(ctx context.Context, network, addr string) (net.Conn, error) {
-			c, err := v.dialer.DialContext(ctx, "tcp", v.addr)
-			if err != nil {
-				return nil, fmt.Errorf("%s connect error: %s", v.addr, err.Error())
-			}
-			return c, nil
-		}
-
-		gunConfig := &gun.Config{
-			ServiceName:       v.option.GrpcOpts.GrpcServiceName,
-			UserAgent:         v.option.GrpcOpts.GrpcUserAgent,
-			Host:              v.option.ServerName,
-			ClientFingerprint: v.option.ClientFingerprint,
-		}
-		if option.ServerName == "" {
-			gunConfig.Host = v.addr
-		}
-		var tlsConfig *tls.Config
-		if option.TLS {
-			tlsConfig, err = ca.GetTLSConfig(ca.Option{
-				TLSConfig: &tls.Config{
-					InsecureSkipVerify: v.option.SkipCertVerify,
-					ServerName:         v.option.ServerName,
-				},
-				Fingerprint: v.option.Fingerprint,
-				Certificate: v.option.Certificate,
-				PrivateKey:  v.option.PrivateKey,
-			})
-			if err != nil {
-				return nil, err
-			}
-			if option.ServerName == "" {
-				host, _, _ := net.SplitHostPort(v.addr)
-				tlsConfig.ServerName = host
-			}
-		}
-
-		v.gunTLSConfig = tlsConfig
-		v.gunConfig = gunConfig
-
-		v.transport = gun.NewHTTP2Client(dialFn, tlsConfig, v.option.ClientFingerprint, v.echConfig, v.realityConfig)
+	if option.Network == "h2" && len(option.HTTP2Opts.Host) == 0 {
+		option.HTTP2Opts.Host = append(option.HTTP2Opts.Host, "www.example.com")
 	}
 
 	return v, nil

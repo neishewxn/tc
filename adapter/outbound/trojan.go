@@ -53,7 +53,6 @@ type TrojanOption struct {
 	Network           string         `proxy:"network,omitempty"`
 	ECHOpts           ECHOptions     `proxy:"ech-opts,omitempty"`
 	RealityOpts       RealityOptions `proxy:"reality-opts,omitempty"`
-	GrpcOpts          GrpcOptions    `proxy:"grpc-opts,omitempty"`
 	WSOpts            WSOptions      `proxy:"ws-opts,omitempty"`
 	SSOpts            TrojanSSOption `proxy:"ss-opts,omitempty"`
 	ClientFingerprint string         `proxy:"client-fingerprint,omitempty"`
@@ -325,41 +324,6 @@ func NewTrojan(option TrojanOption) (*Trojan, error) {
 			return nil, err
 		}
 		t.ssCipher = ciph
-	}
-
-	if option.Network == "grpc" {
-		dialFn := func(ctx context.Context, network, addr string) (net.Conn, error) {
-			c, err := t.dialer.DialContext(ctx, "tcp", t.addr)
-			if err != nil {
-				return nil, fmt.Errorf("%s connect error: %s", t.addr, err.Error())
-			}
-			return c, nil
-		}
-
-		tlsConfig, err := ca.GetTLSConfig(ca.Option{
-			TLSConfig: &tls.Config{
-				NextProtos:         option.ALPN,
-				MinVersion:         tls.VersionTLS12,
-				InsecureSkipVerify: option.SkipCertVerify,
-				ServerName:         option.SNI,
-			},
-			Fingerprint: option.Fingerprint,
-			Certificate: option.Certificate,
-			PrivateKey:  option.PrivateKey,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		t.transport = gun.NewHTTP2Client(dialFn, tlsConfig, option.ClientFingerprint, t.echConfig, t.realityConfig)
-
-		t.gunTLSConfig = tlsConfig
-		t.gunConfig = &gun.Config{
-			ServiceName:       option.GrpcOpts.GrpcServiceName,
-			UserAgent:         option.GrpcOpts.GrpcUserAgent,
-			Host:              option.SNI,
-			ClientFingerprint: option.ClientFingerprint,
-		}
 	}
 
 	return t, nil

@@ -137,35 +137,6 @@ func TestInboundTrojan_Wss2(t *testing.T) {
 	testInboundTrojanTLS(t, inboundOptions, outboundOptions)
 }
 
-func TestInboundTrojan_Grpc1(t *testing.T) {
-	inboundOptions := inbound.TrojanOption{
-		Certificate:     tlsCertificate,
-		PrivateKey:      tlsPrivateKey,
-		GrpcServiceName: "GunService",
-	}
-	outboundOptions := outbound.TrojanOption{
-		Fingerprint: tlsFingerprint,
-		Network:     "grpc",
-		GrpcOpts:    outbound.GrpcOptions{GrpcServiceName: "GunService"},
-	}
-	testInboundTrojanTLS(t, inboundOptions, outboundOptions)
-}
-
-func TestInboundTrojan_Grpc2(t *testing.T) {
-	inboundOptions := inbound.TrojanOption{
-		Certificate:     tlsCertificate,
-		PrivateKey:      tlsPrivateKey,
-		WsPath:          "/ws",
-		GrpcServiceName: "GunService",
-	}
-	outboundOptions := outbound.TrojanOption{
-		Fingerprint: tlsFingerprint,
-		Network:     "grpc",
-		GrpcOpts:    outbound.GrpcOptions{GrpcServiceName: "GunService"},
-	}
-	testInboundTrojanTLS(t, inboundOptions, outboundOptions)
-}
-
 func TestInboundTrojan_Reality(t *testing.T) {
 	inboundOptions := inbound.TrojanOption{
 		RealityConfig: inbound.RealityConfig{
@@ -182,29 +153,6 @@ func TestInboundTrojan_Reality(t *testing.T) {
 			ShortID:   realityShortid,
 		},
 		ClientFingerprint: "chrome",
-	}
-	testInboundTrojan(t, inboundOptions, outboundOptions)
-}
-
-func TestInboundTrojan_Reality_Grpc(t *testing.T) {
-	inboundOptions := inbound.TrojanOption{
-		RealityConfig: inbound.RealityConfig{
-			Dest:        net.JoinHostPort(realityDest, "443"),
-			PrivateKey:  realityPrivateKey,
-			ShortID:     []string{realityShortid},
-			ServerNames: []string{realityDest},
-		},
-		GrpcServiceName: "GunService",
-	}
-	outboundOptions := outbound.TrojanOption{
-		SNI: realityDest,
-		RealityOpts: outbound.RealityOptions{
-			PublicKey: realityPublickey,
-			ShortID:   realityShortid,
-		},
-		ClientFingerprint: "chrome",
-		Network:           "grpc",
-		GrpcOpts:          outbound.GrpcOptions{GrpcServiceName: "GunService"},
 	}
 	testInboundTrojan(t, inboundOptions, outboundOptions)
 }
