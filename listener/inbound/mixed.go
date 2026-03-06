@@ -64,7 +64,7 @@ func (m *Mixed) Address() string {
 
 // Listen implements constant.InboundListener
 func (m *Mixed) Listen(tunnel C.Tunnel) error {
-	for _, addr := range strings.Split(m.RawAddress(), ",") {
+	for addr := range strings.SplitSeq(m.RawAddress(), ",") {
 		l, err := mixed.NewWithConfig(
 			LC.AuthServer{
 				Enable:         true,

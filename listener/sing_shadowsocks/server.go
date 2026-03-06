@@ -100,8 +100,7 @@ func New(config LC.ShadowsocksServer, tunnel C.Tunnel, additions ...inbound.Addi
 		config.Udp = true
 	}
 
-	for _, addr := range strings.Split(config.Listen, ",") {
-		addr := addr
+	for addr := range strings.SplitSeq(config.Listen, ",") {
 
 		if config.Udp {
 			//UDP

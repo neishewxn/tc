@@ -24,7 +24,7 @@ type VmessServer struct {
 	ClientAuthType  string
 	ClientAuthCert  string
 	RealityConfig   reality.Config
-	MuxOption       sing.MuxOption `yaml:"mux-option" json:"mux-option,omitempty"`
+	MuxOption       sing.MuxOption `yaml:"mux-option" json:"mux-option"`
 }
 
 func (t VmessServer) String() string {

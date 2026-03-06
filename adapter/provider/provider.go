@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"runtime"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -38,7 +39,7 @@ type providerForApi struct {
 	Proxies          []C.Proxy         `json:"proxies"`
 	TestUrl          string            `json:"testUrl"`
 	ExpectedStatus   string            `json:"expectedStatus"`
-	UpdatedAt        time.Time         `json:"updatedAt,omitempty"`
+	UpdatedAt        time.Time         `json:"updatedAt"`
 	SubscriptionInfo *SubscriptionInfo `json:"subscriptionInfo,omitempty"`
 }
 
@@ -165,11 +166,8 @@ func (pp *proxySetProvider) Initial() error {
 
 func (pp *proxySetProvider) closeAllConnections() {
 	statistic.DefaultManager.Range(func(c statistic.Tracker) bool {
-		for _, chain := range c.ProviderChains() {
-			if chain == pp.Name() {
-				_ = c.Close()
-				break
-			}
+		if slices.Contains(c.ProviderChains(), pp.Name()) {
+			_ = c.Close()
 		}
 		return true
 	})
@@ -347,7 +345,7 @@ func NewProxiesParser(pdName string, filter string, excludeFilter string, exclud
 
 	var excludeFilterRegs []*regexp2.Regexp
 	if excludeFilter != "" {
-		for _, excludeFilter := range strings.Split(excludeFilter, "`") {
+		for excludeFilter := range strings.SplitSeq(excludeFilter, "`") {
 			excludeFilterReg, err := regexp2.Compile(excludeFilter, regexp2.None)
 			if err != nil {
 				return nil, fmt.Errorf("invalid excludeFilter regex: %w", err)
@@ -357,7 +355,7 @@ func NewProxiesParser(pdName string, filter string, excludeFilter string, exclud
 	}
 
 	var filterRegs []*regexp2.Regexp
-	for _, filter := range strings.Split(filter, "`") {
+	for filter := range strings.SplitSeq(filter, "`") {
 		filterReg, err := regexp2.Compile(filter, regexp2.None)
 		if err != nil {
 			return nil, fmt.Errorf("invalid filter regex: %w", err)

@@ -674,13 +674,7 @@ func (doh *dnsOverHTTPS) probeTLS(ctx context.Context, tlsConfig *tls.Config, ch
 
 // supportsH3 returns true if HTTP/3 is supported by this upstream.
 func (doh *dnsOverHTTPS) supportsH3() (ok bool) {
-	for _, v := range doh.supportedHTTPVersions() {
-		if v == C.HTTPVersion3 {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(doh.supportedHTTPVersions(), C.HTTPVersion3)
 }
 
 // supportsHTTP returns true if HTTP/1.1 or HTTP2 is supported by this upstream.

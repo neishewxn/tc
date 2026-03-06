@@ -12,8 +12,8 @@ type ShadowsocksServer struct {
 	Password  string
 	Cipher    string
 	Udp       bool
-	MuxOption sing.MuxOption `yaml:"mux-option" json:"mux-option,omitempty"`
-	KcpTun    KcpTun         `yaml:"kcp-tun" json:"kcp-tun,omitempty"`
+	MuxOption sing.MuxOption `yaml:"mux-option" json:"mux-option"`
+	KcpTun    KcpTun         `yaml:"kcp-tun" json:"kcp-tun"`
 }
 
 func (t ShadowsocksServer) String() string {

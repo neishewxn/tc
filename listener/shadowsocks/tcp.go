@@ -43,8 +43,7 @@ func New(config LC.ShadowsocksServer, tunnel C.Tunnel, additions ...inbound.Addi
 	sl := &Listener{false, config, nil, nil, pickCipher, h}
 	_listener = sl
 
-	for _, addr := range strings.Split(config.Listen, ",") {
-		addr := addr
+	for addr := range strings.SplitSeq(config.Listen, ",") {
 
 		if config.Udp {
 			//UDP

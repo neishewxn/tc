@@ -225,17 +225,3 @@ func (a *ARC[K, V]) replace(ent *entry[K, V]) {
 		lru.setMRU(a.b2)
 	}
 }
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-func max(a int, b int) int {
-	if a < b {
-		return b
-	}
-	return a
-}

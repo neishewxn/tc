@@ -3,6 +3,7 @@ package route
 import (
 	"context"
 	"fmt"
+	"maps"
 	"strconv"
 	"time"
 
@@ -165,9 +166,7 @@ func unfixedProxy(w http.ResponseWriter, r *http.Request) {
 // It is left here only to ensure the compatibility of the output of the existing RESTful API.
 func proxiesWithProviders() map[string]C.Proxy {
 	allProxies := make(map[string]C.Proxy)
-	for name, proxy := range tunnel.Proxies() {
-		allProxies[name] = proxy
-	}
+	maps.Copy(allProxies, tunnel.Proxies())
 	for _, p := range tunnel.Providers() {
 		for _, proxy := range p.Proxies() {
 			name := proxy.Name()

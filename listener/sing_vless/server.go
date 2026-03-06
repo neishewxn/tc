@@ -137,8 +137,7 @@ func New(config LC.VlessServer, tunnel C.Tunnel, additions ...inbound.Addition) 
 		tlsConfig.NextProtos = append([]string{"h2"}, tlsConfig.NextProtos...) // h2 must before http/1.1
 	}
 
-	for _, addr := range strings.Split(config.Listen, ",") {
-		addr := addr
+	for addr := range strings.SplitSeq(config.Listen, ",") {
 
 		//TCP
 		l, err := inbound.Listen("tcp", addr)

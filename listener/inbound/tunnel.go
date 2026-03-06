@@ -78,7 +78,7 @@ func (t *Tunnel) Address() string {
 
 // Listen implements constant.InboundListener
 func (t *Tunnel) Listen(tunnel C.Tunnel) error {
-	for _, addr := range strings.Split(t.RawAddress(), ",") {
+	for addr := range strings.SplitSeq(t.RawAddress(), ",") {
 		for _, network := range t.config.Network {
 			switch network {
 			case "tcp":
