@@ -16,7 +16,7 @@ import (
 type marshallable int
 
 func (m marshallable) MarshalText() ([]byte, error) {
-	return []byte(fmt.Sprintf("#%d#", m)), nil
+	return fmt.Appendf(nil, "#%d#", m), nil
 }
 
 func (m *marshallable) UnmarshalText(text []byte) error {
