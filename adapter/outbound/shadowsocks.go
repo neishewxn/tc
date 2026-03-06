@@ -27,11 +27,11 @@ type ShadowSocks struct {
 
 	option *ShadowSocksOption
 	// obfs
-	obfsMode        string
-	obfsOption      *simpleObfsOption
-	v2rayOption     *v2rayObfs.Option
-	gostOption      *gost.Option
-	kcptunClient    *kcptun.Client
+	obfsMode     string
+	obfsOption   *simpleObfsOption
+	v2rayOption  *v2rayObfs.Option
+	gostOption   *gost.Option
+	kcptunClient *kcptun.Client
 }
 
 type ShadowSocksOption struct {
@@ -399,12 +399,12 @@ func NewShadowSocks(option ShadowSocksOption) (*ShadowSocks, error) {
 		},
 		method: method,
 
-		option:          &option,
-		obfsMode:        obfsMode,
-		v2rayOption:     v2rayOption,
-		gostOption:      gostOption,
-		obfsOption:      obfsOption,
-		kcptunClient:    kcptunClient,
+		option:       &option,
+		obfsMode:     obfsMode,
+		v2rayOption:  v2rayOption,
+		gostOption:   gostOption,
+		obfsOption:   obfsOption,
+		kcptunClient: kcptunClient,
 	}
 	outbound.dialer = option.NewDialer(outbound.DialOptions())
 	return outbound, nil

@@ -56,7 +56,7 @@ var (
 	ssMux      sync.Mutex
 	vmessMux   sync.Mutex
 
-	LastTunConf  LC.Tun
+	LastTunConf LC.Tun
 )
 
 type Ports struct {

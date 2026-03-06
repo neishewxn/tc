@@ -131,11 +131,11 @@ type IPTables struct {
 
 // NTP config
 type NTP struct {
-	Enable        bool
-	Server        string
-	Port          int
-	Interval      int
-	DialerProxy   string
+	Enable      bool
+	Server      string
+	Port        int
+	Interval    int
+	DialerProxy string
 }
 
 // DNS config
@@ -253,11 +253,11 @@ type RawClashForAndroid struct {
 }
 
 type RawNTP struct {
-	Enable        bool   `yaml:"enable" json:"enable"`
-	Server        string `yaml:"server" json:"server"`
-	Port          int    `yaml:"port" json:"port"`
-	Interval      int    `yaml:"interval" json:"interval"`
-	DialerProxy   string `yaml:"dialer-proxy" json:"dialer-proxy"`
+	Enable      bool   `yaml:"enable" json:"enable"`
+	Server      string `yaml:"server" json:"server"`
+	Port        int    `yaml:"port" json:"port"`
+	Interval    int    `yaml:"interval" json:"interval"`
+	DialerProxy string `yaml:"dialer-proxy" json:"dialer-proxy"`
 }
 
 type RawTun struct {
@@ -517,10 +517,10 @@ func DefaultRawConfig() *RawConfig {
 			FakeIPFilterMode: C.FilterBlackList,
 		},
 		NTP: RawNTP{
-			Enable:        false,
-			Server:        "time.apple.com",
-			Port:          123,
-			Interval:      30,
+			Enable:   false,
+			Server:   "time.apple.com",
+			Port:     123,
+			Interval: 30,
 		},
 		Tun: RawTun{
 			Enable:              false,
@@ -815,11 +815,11 @@ func parseIPTables(cfg *RawConfig) (*IPTables, error) {
 
 func parseNTP(cfg *RawConfig) (*NTP, error) {
 	return &NTP{
-		Enable:        cfg.NTP.Enable,
-		Server:        cfg.NTP.Server,
-		Port:          cfg.NTP.Port,
-		Interval:      cfg.NTP.Interval,
-		DialerProxy:   cfg.NTP.DialerProxy,
+		Enable:      cfg.NTP.Enable,
+		Server:      cfg.NTP.Server,
+		Port:        cfg.NTP.Port,
+		Interval:    cfg.NTP.Interval,
+		DialerProxy: cfg.NTP.DialerProxy,
 	}, nil
 }
 
