@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/cipher"
 	"crypto/ecdh"
-	"crypto/mlkem"
 	"crypto/rand"
 	"errors"
 	"fmt"
@@ -14,6 +13,7 @@ import (
 	"time"
 
 	"github.com/metacubex/blake3"
+	"github.com/metacubex/mlkem"
 )
 
 type ServerSession struct {

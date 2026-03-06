@@ -531,7 +531,7 @@ func (q *Deque[T]) Insert(at int, item T) {
 	if at*2 < q.count {
 		q.PushFront(item)
 		front := q.head
-		for range at {
+		for i := 0; i < at; i++ {
 			next := q.next(front)
 			q.buf[front], q.buf[next] = q.buf[next], q.buf[front]
 			front = next
@@ -541,7 +541,7 @@ func (q *Deque[T]) Insert(at int, item T) {
 	swaps := q.count - at
 	q.PushBack(item)
 	back := q.prev(q.tail)
-	for range swaps {
+	for i := 0; i < swaps; i++ {
 		prev := q.prev(back)
 		q.buf[back], q.buf[prev] = q.buf[prev], q.buf[back]
 		back = prev
@@ -561,7 +561,7 @@ func (q *Deque[T]) Remove(at int) T {
 	q.checkRange(at)
 	rm := (q.head + at) & (len(q.buf) - 1)
 	if at*2 < q.count {
-		for range at {
+		for i := 0; i < at; i++ {
 			prev := q.prev(rm)
 			q.buf[prev], q.buf[rm] = q.buf[rm], q.buf[prev]
 			rm = prev
@@ -569,7 +569,7 @@ func (q *Deque[T]) Remove(at int) T {
 		return q.PopFront()
 	}
 	swaps := q.count - at - 1
-	for range swaps {
+	for i := 0; i < swaps; i++ {
 		next := q.next(rm)
 		q.buf[rm], q.buf[next] = q.buf[next], q.buf[rm]
 		rm = next

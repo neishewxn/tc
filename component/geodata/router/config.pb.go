@@ -7,10 +7,11 @@
 package router
 
 import (
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
+
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -584,7 +585,7 @@ func file_component_geodata_router_config_proto_rawDescGZIP() []byte {
 
 var file_component_geodata_router_config_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_component_geodata_router_config_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
-var file_component_geodata_router_config_proto_goTypes = []interface{}{
+var file_component_geodata_router_config_proto_goTypes = []any{
 	(Domain_Type)(0),         // 0: mihomo.component.geodata.router.Domain.Type
 	(*Domain)(nil),           // 1: mihomo.component.geodata.router.Domain
 	(*CIDR)(nil),             // 2: mihomo.component.geodata.router.CIDR
@@ -614,7 +615,7 @@ func file_component_geodata_router_config_proto_init() {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_component_geodata_router_config_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_component_geodata_router_config_proto_msgTypes[0].Exporter = func(v any, i int) any {
 			switch v := v.(*Domain); i {
 			case 0:
 				return &v.state
@@ -626,7 +627,7 @@ func file_component_geodata_router_config_proto_init() {
 				return nil
 			}
 		}
-		file_component_geodata_router_config_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_component_geodata_router_config_proto_msgTypes[1].Exporter = func(v any, i int) any {
 			switch v := v.(*CIDR); i {
 			case 0:
 				return &v.state
@@ -638,7 +639,7 @@ func file_component_geodata_router_config_proto_init() {
 				return nil
 			}
 		}
-		file_component_geodata_router_config_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+		file_component_geodata_router_config_proto_msgTypes[2].Exporter = func(v any, i int) any {
 			switch v := v.(*GeoIP); i {
 			case 0:
 				return &v.state
@@ -650,7 +651,7 @@ func file_component_geodata_router_config_proto_init() {
 				return nil
 			}
 		}
-		file_component_geodata_router_config_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_component_geodata_router_config_proto_msgTypes[3].Exporter = func(v any, i int) any {
 			switch v := v.(*GeoIPList); i {
 			case 0:
 				return &v.state
@@ -662,7 +663,7 @@ func file_component_geodata_router_config_proto_init() {
 				return nil
 			}
 		}
-		file_component_geodata_router_config_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+		file_component_geodata_router_config_proto_msgTypes[4].Exporter = func(v any, i int) any {
 			switch v := v.(*GeoSite); i {
 			case 0:
 				return &v.state
@@ -674,7 +675,7 @@ func file_component_geodata_router_config_proto_init() {
 				return nil
 			}
 		}
-		file_component_geodata_router_config_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_component_geodata_router_config_proto_msgTypes[5].Exporter = func(v any, i int) any {
 			switch v := v.(*GeoSiteList); i {
 			case 0:
 				return &v.state
@@ -686,7 +687,7 @@ func file_component_geodata_router_config_proto_init() {
 				return nil
 			}
 		}
-		file_component_geodata_router_config_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+		file_component_geodata_router_config_proto_msgTypes[6].Exporter = func(v any, i int) any {
 			switch v := v.(*Domain_Attribute); i {
 			case 0:
 				return &v.state
@@ -699,7 +700,7 @@ func file_component_geodata_router_config_proto_init() {
 			}
 		}
 	}
-	file_component_geodata_router_config_proto_msgTypes[6].OneofWrappers = []interface{}{
+	file_component_geodata_router_config_proto_msgTypes[6].OneofWrappers = []any{
 		(*Domain_Attribute_BoolValue)(nil),
 		(*Domain_Attribute_IntValue)(nil),
 	}

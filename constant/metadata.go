@@ -35,6 +35,11 @@ const (
 	TROJAN
 	TUNNEL
 	TUN
+	TUIC
+	HYSTERIA2
+	ANYTLS
+	MIERU
+	SUDOKU
 	INNER
 )
 
@@ -100,6 +105,16 @@ func (t Type) String() string {
 		return "Tunnel"
 	case TUN:
 		return "Tun"
+	case TUIC:
+		return "Tuic"
+	case HYSTERIA2:
+		return "Hysteria2"
+	case ANYTLS:
+		return "AnyTLS"
+	case MIERU:
+		return "Mieru"
+	case SUDOKU:
+		return "Sudoku"
 	case INNER:
 		return "Inner"
 	default:
@@ -134,6 +149,16 @@ func ParseType(t string) (*Type, error) {
 		res = TUNNEL
 	case "TUN":
 		res = TUN
+	case "TUIC":
+		res = TUIC
+	case "HYSTERIA2":
+		res = HYSTERIA2
+	case "ANYTLS":
+		res = ANYTLS
+	case "MIERU":
+		res = MIERU
+	case "SUDOKU":
+		res = SUDOKU
 	case "INNER":
 		res = INNER
 	default:

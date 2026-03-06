@@ -98,10 +98,14 @@ func transform(servers []NameServer, resolver *Resolver) []dnsClient {
 			c = newDoTClient(s.Addr, resolver, s.Params, s.ProxyAdapter, s.ProxyName)
 		case "https":
 			c = newDoHClient(s.Addr, resolver, s.PreferH3, s.Params, s.ProxyAdapter, s.ProxyName)
+		case "dhcp":
+			c = newDHCPClient(s.Addr)
 		case "system":
 			c = newSystemClient()
 		case "rcode":
 			c = newRCodeClient(s.Addr)
+		case "quic":
+			c = newDoQ(s.Addr, resolver, s.Params, s.ProxyAdapter, s.ProxyName)
 		default:
 			c = newClient(s.Addr, resolver, s.Net, s.Params, s.ProxyAdapter, s.ProxyName)
 		}

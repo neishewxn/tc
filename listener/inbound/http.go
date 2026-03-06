@@ -18,6 +18,8 @@ type HTTPOption struct {
 	PrivateKey     string        `inbound:"private-key,omitempty"`
 	ClientAuthType string        `inbound:"client-auth-type,omitempty"`
 	ClientAuthCert string        `inbound:"client-auth-cert,omitempty"`
+	EchKey         string        `inbound:"ech-key,omitempty"`
+	RealityConfig  RealityConfig `inbound:"reality-config,omitempty"`
 }
 
 func (o HTTPOption) Equal(config C.InboundConfig) bool {
@@ -57,7 +59,7 @@ func (h *HTTP) Address() string {
 
 // Listen implements constant.InboundListener
 func (h *HTTP) Listen(tunnel C.Tunnel) error {
-	for addr := range strings.SplitSeq(h.RawAddress(), ",") {
+	for _, addr := range strings.Split(h.RawAddress(), ",") {
 		l, err := http.NewWithConfig(
 			LC.AuthServer{
 				Enable:         true,
@@ -67,6 +69,7 @@ func (h *HTTP) Listen(tunnel C.Tunnel) error {
 				PrivateKey:     h.config.PrivateKey,
 				ClientAuthType: h.config.ClientAuthType,
 				ClientAuthCert: h.config.ClientAuthCert,
+				RealityConfig:  h.config.RealityConfig.Build(),
 			},
 			tunnel,
 			h.Additions()...,

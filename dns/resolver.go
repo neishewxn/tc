@@ -3,9 +3,7 @@ package dns
 import (
 	"context"
 	"errors"
-	"maps"
 	"net/netip"
-	"slices"
 	"time"
 
 	"github.com/metacubex/mihomo/common/arc"
@@ -18,6 +16,7 @@ import (
 
 	D "github.com/miekg/dns"
 	"github.com/samber/lo"
+	"golang.org/x/exp/maps"
 )
 
 type dnsClient interface {
@@ -184,8 +183,8 @@ func (r *Resolver) exchangeWithoutCache(ctx context.Context, m *D.Msg) (msg *D.M
 
 			if cache {
 				// OPT RRs MUST NOT be cached, forwarded, or stored in or loaded from master files.
-				msg.Extra = slices.DeleteFunc(msg.Extra, func(rr D.RR) bool {
-					return rr.Header().Rrtype == D.TypeOPT
+				msg.Extra = lo.Filter(msg.Extra, func(rr D.RR, index int) bool {
+					return rr.Header().Rrtype != D.TypeOPT
 				})
 				putMsgToCache(r.cache, q.String(), q, msg)
 			}

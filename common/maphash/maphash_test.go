@@ -19,7 +19,7 @@ import (
 
 func TestUnseededHash(t *testing.T) {
 	m := map[uint64]struct{}{}
-	for range 1000 {
+	for i := 0; i < 1000; i++ {
 		h := new(Hash)
 		m[h.Sum64()] = struct{}{}
 	}
@@ -31,7 +31,7 @@ func TestUnseededHash(t *testing.T) {
 func TestSeededHash(t *testing.T) {
 	s := MakeSeed()
 	m := map[uint64]struct{}{}
-	for range 1000 {
+	for i := 0; i < 1000; i++ {
 		h := new(Hash)
 		h.SetSeed(s)
 		m[h.Sum64()] = struct{}{}
@@ -127,7 +127,7 @@ func TestHashHighBytes(t *testing.T) {
 	// See issue 34925.
 	const N = 10
 	m := map[uint64]struct{}{}
-	for range N {
+	for i := 0; i < N; i++ {
 		h := new(Hash)
 		h.WriteString("foo")
 		m[h.Sum64()>>32] = struct{}{}
@@ -244,8 +244,8 @@ func TestComparable(t *testing.T) {
 	type S struct {
 		s string
 	}
-	s1 := S{s: heapStr()}
-	s2 := S{s: heapStr()}
+	s1 := S{s: heapStr(t)}
+	s2 := S{s: heapStr(t)}
 	if unsafe.StringData(s1.s) == unsafe.StringData(s2.s) {
 		t.Fatalf("unexpected two heapStr ptr equal")
 	}
@@ -271,7 +271,7 @@ func testComparableNoEqual[T comparable](t *testing.T, v1, v2 T) {
 
 var heapStrValue = []byte("aTestString")
 
-func heapStr() string {
+func heapStr(t *testing.T) string {
 	return string(heapStrValue)
 }
 
@@ -331,8 +331,8 @@ func TestWriteComparable(t *testing.T) {
 	type S struct {
 		s string
 	}
-	s1 := S{s: heapStr()}
-	s2 := S{s: heapStr()}
+	s1 := S{s: heapStr(t)}
+	s2 := S{s: heapStr(t)}
 	if unsafe.StringData(s1.s) == unsafe.StringData(s2.s) {
 		t.Fatalf("unexpected two heapStr ptr equal")
 	}
@@ -427,7 +427,7 @@ func TestComparableAllocations(t *testing.T) {
 		t.Skip("test broken in old golang version")
 	}
 	seed := MakeSeed()
-	x := heapStr()
+	x := heapStr(t)
 	allocs := testing.AllocsPerRun(10, func() {
 		s := "s" + x
 		Comparable(seed, s)
@@ -530,5 +530,5 @@ func TypeFor[T any]() reflect.Type {
 	if t := reflect.TypeOf(v); t != nil {
 		return t // optimize for T being a non-interface kind
 	}
-	return reflect.TypeFor[T]() // only for an interface kind
+	return reflect.TypeOf((*T)(nil)).Elem() // only for an interface kind
 }

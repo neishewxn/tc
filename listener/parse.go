@@ -72,6 +72,34 @@ func ParseListener(mapping map[string]any) (C.InboundListener, error) {
 			return nil, err
 		}
 		listener, err = IN.NewTun(tunOption)
+	case "shadowsocks":
+		shadowsocksOption := &IN.ShadowSocksOption{UDP: true}
+		err = decoder.Decode(mapping, shadowsocksOption)
+		if err != nil {
+			return nil, err
+		}
+		listener, err = IN.NewShadowSocks(shadowsocksOption)
+	case "vmess":
+		vmessOption := &IN.VmessOption{}
+		err = decoder.Decode(mapping, vmessOption)
+		if err != nil {
+			return nil, err
+		}
+		listener, err = IN.NewVmess(vmessOption)
+	case "vless":
+		vlessOption := &IN.VlessOption{}
+		err = decoder.Decode(mapping, vlessOption)
+		if err != nil {
+			return nil, err
+		}
+		listener, err = IN.NewVless(vlessOption)
+	case "trojan":
+		trojanOption := &IN.TrojanOption{}
+		err = decoder.Decode(mapping, trojanOption)
+		if err != nil {
+			return nil, err
+		}
+		listener, err = IN.NewTrojan(trojanOption)
 	default:
 		return nil, fmt.Errorf("unsupport proxy type: %s", proxyType)
 	}

@@ -13,12 +13,14 @@ import (
 
 type SocksOption struct {
 	BaseOption
-	Users          AuthUsers `inbound:"users,omitempty"`
-	UDP            bool      `inbound:"udp,omitempty"`
-	Certificate    string    `inbound:"certificate,omitempty"`
-	PrivateKey     string    `inbound:"private-key,omitempty"`
-	ClientAuthType string    `inbound:"client-auth-type,omitempty"`
-	ClientAuthCert string    `inbound:"client-auth-cert,omitempty"`
+	Users          AuthUsers     `inbound:"users,omitempty"`
+	UDP            bool          `inbound:"udp,omitempty"`
+	Certificate    string        `inbound:"certificate,omitempty"`
+	PrivateKey     string        `inbound:"private-key,omitempty"`
+	ClientAuthType string        `inbound:"client-auth-type,omitempty"`
+	ClientAuthCert string        `inbound:"client-auth-cert,omitempty"`
+	EchKey         string        `inbound:"ech-key,omitempty"`
+	RealityConfig  RealityConfig `inbound:"reality-config,omitempty"`
 }
 
 func (o SocksOption) Equal(config C.InboundConfig) bool {
@@ -82,7 +84,7 @@ func (s *Socks) Address() string {
 
 // Listen implements constant.InboundListener
 func (s *Socks) Listen(tunnel C.Tunnel) error {
-	for addr := range strings.SplitSeq(s.RawAddress(), ",") {
+	for _, addr := range strings.Split(s.RawAddress(), ",") {
 		stl, err := socks.NewWithConfig(
 			LC.AuthServer{
 				Enable:         true,
@@ -92,6 +94,7 @@ func (s *Socks) Listen(tunnel C.Tunnel) error {
 				PrivateKey:     s.config.PrivateKey,
 				ClientAuthType: s.config.ClientAuthType,
 				ClientAuthCert: s.config.ClientAuthCert,
+				RealityConfig:  s.config.RealityConfig.Build(),
 			},
 			tunnel,
 			s.Additions()...,

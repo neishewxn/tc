@@ -41,7 +41,8 @@ func StreamTLSConn(ctx context.Context, conn net.Conn, cfg *TLSConfig) (net.Conn
 		if cfg.Reality != nil {
 			return tlsC.GetRealityConn(ctx, conn, clientFingerprint, tlsConfig.ServerName, cfg.Reality)
 		}
-		tlsConn := tlsC.UClient(conn, tlsC.UConfig(tlsConfig), clientFingerprint)
+		tlsConfig := tlsC.UConfig(tlsConfig)
+		tlsConn := tlsC.UClient(conn, tlsConfig, clientFingerprint)
 		err = tlsConn.HandshakeContext(ctx)
 		if err != nil {
 			return nil, err

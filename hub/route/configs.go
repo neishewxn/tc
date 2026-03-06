@@ -40,6 +40,7 @@ type configSchema struct {
 	TProxyPort        *int                     `json:"tproxy-port"`
 	MixedPort         *int                     `json:"mixed-port"`
 	Tun               *tunSchema               `json:"tun"`
+	TuicServer        *tuicServerSchema        `json:"tuic-server"`
 	ShadowSocksConfig *string                  `json:"ss-config"`
 	VmessConfig       *string                  `json:"vmess-config"`
 	TcptunConfig      *string                  `json:"tcptun-config"`
@@ -104,6 +105,21 @@ type tunSchema struct {
 	// darwin special config
 	RecvMsgX *bool `yaml:"recvmsgx" json:"recvmsgx,omitempty"`
 	SendMsgX *bool `yaml:"sendmsgx" json:"sendmsgx,omitempty"`
+}
+
+type tuicServerSchema struct {
+	Enable                bool               `yaml:"enable" json:"enable"`
+	Listen                *string            `yaml:"listen" json:"listen"`
+	Token                 *[]string          `yaml:"token" json:"token"`
+	Users                 *map[string]string `yaml:"users" json:"users,omitempty"`
+	Certificate           *string            `yaml:"certificate" json:"certificate"`
+	PrivateKey            *string            `yaml:"private-key" json:"private-key"`
+	CongestionController  *string            `yaml:"congestion-controller" json:"congestion-controller,omitempty"`
+	MaxIdleTime           *int               `yaml:"max-idle-time" json:"max-idle-time,omitempty"`
+	AuthenticationTimeout *int               `yaml:"authentication-timeout" json:"authentication-timeout,omitempty"`
+	ALPN                  *[]string          `yaml:"alpn" json:"alpn,omitempty"`
+	MaxUdpRelayPacketSize *int               `yaml:"max-udp-relay-packet-size" json:"max-udp-relay-packet-size,omitempty"`
+	CWND                  *int               `yaml:"cwnd" json:"cwnd,omitempty"`
 }
 
 func getConfigs(w http.ResponseWriter, r *http.Request) {
@@ -293,6 +309,8 @@ func patchConfigs(w http.ResponseWriter, r *http.Request) {
 	listener.ReCreateTProxy(pointerOrDefault(general.TProxyPort, ports.TProxyPort), tunnel.Tunnel)
 	listener.ReCreateMixed(pointerOrDefault(general.MixedPort, ports.MixedPort), tunnel.Tunnel)
 	listener.ReCreateTun(pointerOrDefaultTun(general.Tun, listener.LastTunConf), tunnel.Tunnel)
+	listener.ReCreateShadowSocks(pointerOrDefault(general.ShadowSocksConfig, ports.ShadowSocksConfig), tunnel.Tunnel)
+	listener.ReCreateVmess(pointerOrDefault(general.VmessConfig, ports.VmessConfig), tunnel.Tunnel)
 
 	if general.Mode != nil {
 		tunnel.SetMode(*general.Mode)

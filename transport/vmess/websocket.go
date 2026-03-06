@@ -352,7 +352,8 @@ func streamWebsocketConn(ctx context.Context, conn net.Conn, c *WebsocketConfig,
 		}
 
 		if clientFingerprint, ok := tlsC.GetFingerprint(c.ClientFingerprint); ok {
-			tlsConn := tlsC.UClient(conn, tlsC.UConfig(config), clientFingerprint)
+			tlsConfig := tlsC.UConfig(config)
+			tlsConn := tlsC.UClient(conn, tlsConfig, clientFingerprint)
 			if err = tlsC.BuildWebsocketHandshakeState(tlsConn); err != nil {
 				return nil, fmt.Errorf("parse url %s error: %w", c.Path, err)
 			}

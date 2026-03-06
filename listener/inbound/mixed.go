@@ -20,6 +20,8 @@ type MixedOption struct {
 	PrivateKey     string        `inbound:"private-key,omitempty"`
 	ClientAuthType string        `inbound:"client-auth-type,omitempty"`
 	ClientAuthCert string        `inbound:"client-auth-cert,omitempty"`
+	EchKey         string        `inbound:"ech-key,omitempty"`
+	RealityConfig  RealityConfig `inbound:"reality-config,omitempty"`
 }
 
 func (o MixedOption) Equal(config C.InboundConfig) bool {
@@ -62,7 +64,7 @@ func (m *Mixed) Address() string {
 
 // Listen implements constant.InboundListener
 func (m *Mixed) Listen(tunnel C.Tunnel) error {
-	for addr := range strings.SplitSeq(m.RawAddress(), ",") {
+	for _, addr := range strings.Split(m.RawAddress(), ",") {
 		l, err := mixed.NewWithConfig(
 			LC.AuthServer{
 				Enable:         true,
@@ -72,6 +74,7 @@ func (m *Mixed) Listen(tunnel C.Tunnel) error {
 				PrivateKey:     m.config.PrivateKey,
 				ClientAuthType: m.config.ClientAuthType,
 				ClientAuthCert: m.config.ClientAuthCert,
+				RealityConfig:  m.config.RealityConfig.Build(),
 			},
 			tunnel,
 			m.Additions()...,

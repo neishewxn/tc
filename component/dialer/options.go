@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	DefaultInterface   = atomic.NewTypedValue("")
+	DefaultInterface   = atomic.NewTypedValue[string]("")
 	DefaultRoutingMark = atomic.NewInt32(0)
 
 	DefaultInterfaceFinder = atomic.NewTypedValue[InterfaceFinder](nil)

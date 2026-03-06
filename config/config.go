@@ -69,20 +69,22 @@ type General struct {
 
 // Inbound config
 type Inbound struct {
-	Port             int            `json:"port"`
-	SocksPort        int            `json:"socks-port"`
-	RedirPort        int            `json:"redir-port"`
-	TProxyPort       int            `json:"tproxy-port"`
-	MixedPort        int            `json:"mixed-port"`
-	Tun              LC.Tun         `json:"tun"`
-	Authentication   []string       `json:"authentication"`
-	SkipAuthPrefixes []netip.Prefix `json:"skip-auth-prefixes"`
-	LanAllowedIPs    []netip.Prefix `json:"lan-allowed-ips"`
-	LanDisAllowedIPs []netip.Prefix `json:"lan-disallowed-ips"`
-	AllowLan         bool           `json:"allow-lan"`
-	BindAddress      string         `json:"bind-address"`
-	InboundTfo       bool           `json:"inbound-tfo"`
-	InboundMPTCP     bool           `json:"inbound-mptcp"`
+	Port              int            `json:"port"`
+	SocksPort         int            `json:"socks-port"`
+	RedirPort         int            `json:"redir-port"`
+	TProxyPort        int            `json:"tproxy-port"`
+	MixedPort         int            `json:"mixed-port"`
+	Tun               LC.Tun         `json:"tun"`
+	ShadowSocksConfig string         `json:"ss-config"`
+	VmessConfig       string         `json:"vmess-config"`
+	Authentication    []string       `json:"authentication"`
+	SkipAuthPrefixes  []netip.Prefix `json:"skip-auth-prefixes"`
+	LanAllowedIPs     []netip.Prefix `json:"lan-allowed-ips"`
+	LanDisAllowedIPs  []netip.Prefix `json:"lan-disallowed-ips"`
+	AllowLan          bool           `json:"allow-lan"`
+	BindAddress       string         `json:"bind-address"`
+	InboundTfo        bool           `json:"inbound-tfo"`
+	InboundMPTCP      bool           `json:"inbound-mptcp"`
 }
 
 // GeoXUrl config
@@ -369,13 +371,13 @@ type RawTLS struct {
 }
 
 type RawConfig struct {
-	Port       int `yaml:"port" json:"port"`
-	SocksPort  int `yaml:"socks-port" json:"socks-port"`
-	RedirPort  int `yaml:"redir-port" json:"redir-port"`
-	TProxyPort int `yaml:"tproxy-port" json:"tproxy-port"`
-	MixedPort  int `yaml:"mixed-port" json:"mixed-port"`
-	// ShadowSocksConfig       string                  `yaml:"ss-config" json:"ss-config"`
-	// VmessConfig             string                  `yaml:"vmess-config" json:"vmess-config"`
+	Port                    int                     `yaml:"port" json:"port"`
+	SocksPort               int                     `yaml:"socks-port" json:"socks-port"`
+	RedirPort               int                     `yaml:"redir-port" json:"redir-port"`
+	TProxyPort              int                     `yaml:"tproxy-port" json:"tproxy-port"`
+	MixedPort               int                     `yaml:"mixed-port" json:"mixed-port"`
+	ShadowSocksConfig       string                  `yaml:"ss-config" json:"ss-config"`
+	VmessConfig             string                  `yaml:"vmess-config" json:"vmess-config"`
 	InboundTfo              bool                    `yaml:"inbound-tfo" json:"inbound-tfo"`
 	InboundMPTCP            bool                    `yaml:"inbound-mptcp" json:"inbound-mptcp"`
 	Authentication          []string                `yaml:"authentication" json:"authentication"`
@@ -701,18 +703,20 @@ func temporaryUpdateGeneral(general *General) func()
 func parseGeneral(cfg *RawConfig) (*General, error) {
 	return &General{
 		Inbound: Inbound{
-			Port:             cfg.Port,
-			SocksPort:        cfg.SocksPort,
-			RedirPort:        cfg.RedirPort,
-			TProxyPort:       cfg.TProxyPort,
-			MixedPort:        cfg.MixedPort,
-			AllowLan:         cfg.AllowLan,
-			SkipAuthPrefixes: cfg.SkipAuthPrefixes,
-			LanAllowedIPs:    cfg.LanAllowedIPs,
-			LanDisAllowedIPs: cfg.LanDisAllowedIPs,
-			BindAddress:      cfg.BindAddress,
-			InboundTfo:       cfg.InboundTfo,
-			InboundMPTCP:     cfg.InboundMPTCP,
+			Port:              cfg.Port,
+			SocksPort:         cfg.SocksPort,
+			RedirPort:         cfg.RedirPort,
+			TProxyPort:        cfg.TProxyPort,
+			MixedPort:         cfg.MixedPort,
+			ShadowSocksConfig: cfg.ShadowSocksConfig,
+			VmessConfig:       cfg.VmessConfig,
+			AllowLan:          cfg.AllowLan,
+			SkipAuthPrefixes:  cfg.SkipAuthPrefixes,
+			LanAllowedIPs:     cfg.LanAllowedIPs,
+			LanDisAllowedIPs:  cfg.LanDisAllowedIPs,
+			BindAddress:       cfg.BindAddress,
+			InboundTfo:        cfg.InboundTfo,
+			InboundMPTCP:      cfg.InboundMPTCP,
 		},
 		UnifiedDelay: cfg.UnifiedDelay,
 		Mode:         cfg.Mode,
@@ -997,7 +1001,12 @@ func verifySubRule(subRules map[string][]C.Rule) error {
 
 func verifySubRuleCircularReferences(n string, subRules map[string][]C.Rule, arr []string) error {
 	isInArray := func(v string, array []string) bool {
-		return slices.Contains(array, v)
+		for _, c := range array {
+			if v == c {
+				return true
+			}
+		}
+		return false
 	}
 
 	arr = append(arr, n)
@@ -1134,7 +1143,7 @@ func parseNameServer(servers []string, respectRules bool, preferH3 bool) ([]dns.
 
 		var proxyName string
 		params := map[string]string{}
-		for s := range strings.SplitSeq(u.Fragment, "&") {
+		for _, s := range strings.Split(u.Fragment, "&") {
 			arr := strings.SplitN(s, "=", 2)
 			switch len(arr) {
 			case 1:
@@ -1279,8 +1288,8 @@ func parseNameServerPolicy(nsPolicy *orderedmap.OrderedMap[string, any], rulePro
 					policy = append(policy, dns.Policy{Domain: newKey, NameServers: nameservers})
 				}
 			} else {
-				subkeys := strings.SplitSeq(k, ",")
-				for subkey := range subkeys {
+				subkeys := strings.Split(k, ",")
+				for _, subkey := range subkeys {
 					policy = append(policy, dns.Policy{Domain: subkey, NameServers: nameservers})
 				}
 			}
