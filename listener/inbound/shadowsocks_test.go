@@ -11,10 +11,10 @@ import (
 	"github.com/metacubex/mihomo/listener/inbound"
 	"github.com/metacubex/mihomo/transport/kcptun"
 
-	shadowsocks "github.com/metacubex/sing-shadowsocks"
-	"github.com/metacubex/sing-shadowsocks/shadowaead"
-	"github.com/metacubex/sing-shadowsocks/shadowaead_2022"
-	"github.com/metacubex/sing-shadowsocks/shadowstream"
+	shadowsocks "github.com/neishewxn/sing-shadowsocks"
+	"github.com/neishewxn/sing-shadowsocks/shadowaead"
+	"github.com/neishewxn/sing-shadowsocks/shadowaead_2022"
+	"github.com/neishewxn/sing-shadowsocks/shadowstream"
 	"github.com/stretchr/testify/assert"
 )
 

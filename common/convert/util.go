@@ -9,7 +9,7 @@ import (
 
 	"github.com/metacubex/http"
 	"github.com/metacubex/randv2"
-	"github.com/metacubex/sing-shadowsocks/shadowimpl"
+	"github.com/neishewxn/sing-shadowsocks/shadowimpl"
 )
 
 var hostsSuffix = []string{
