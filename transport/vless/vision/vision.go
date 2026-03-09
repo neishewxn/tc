@@ -16,7 +16,6 @@ import (
 	tlsC "github.com/metacubex/mihomo/component/tls"
 	"github.com/metacubex/mihomo/log"
 	"github.com/metacubex/mihomo/transport/vless/encryption"
-	utls "github.com/metacubex/utls"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/metacubex/tls"
@@ -37,42 +36,35 @@ func NewConn(conn net.Conn, tlsConn net.Conn, userUUID uuid.UUID) (*Conn, error)
 		writeFilterApplicationData: true,
 		writeOnceUserUUID:          userUUID.Bytes(),
 	}
-	var t reflect.Type
+	var t SimpleType
 	var p unsafe.Pointer
 	var upstream any = tlsConn
 	for {
 		switch underlying := upstream.(type) {
 		case *gotls.Conn:
-			//log.Debugln("type tls")
 			tlsConn = underlying
 			c.netConn = underlying.NetConn()
-			t = reflect.TypeOf(underlying).Elem()
+			t = reflect.TypeFor[gotls.Conn]()
 			p = unsafe.Pointer(underlying)
 		case *tls.Conn:
-			//log.Debugln("type tls")
 			tlsConn = underlying
 			c.netConn = underlying.NetConn()
-			t = reflect.TypeOf(underlying).Elem()
+			t = reflect.TypeFor[tls.Conn]()
 			p = unsafe.Pointer(underlying)
 		case *tlsC.Conn:
-			//log.Debugln("type *tlsC.Conn")
 			tlsConn = underlying
 			c.netConn = underlying.NetConn()
-			t = reflect.TypeOf(underlying).Elem()
+			t = reflect.TypeFor[tlsC.Conn]()
 			p = unsafe.Pointer(underlying)
 		case *tlsC.UConn:
-			//log.Debugln("type *tlsC.UConn")
 			tlsConn = underlying
 			c.netConn = underlying.NetConn()
-			// t = reflect.TypeOf(underlying.Conn).Elem()
-			t = reflect.TypeFor[utls.Conn]()
-			//log.Debugln("t:%v", t)
+			t = utlsType
 			p = unsafe.Pointer(underlying.Conn)
 		case *encryption.CommonConn:
-			//log.Debugln("type *encryption.CommonConn")
 			tlsConn = underlying
 			c.netConn = underlying.Conn
-			t = reflect.TypeOf(underlying).Elem()
+			t = reflect.TypeFor[encryption.CommonConn]()
 			p = unsafe.Pointer(underlying)
 		}
 		if u, ok := upstream.(N.ReaderWithUpstream); !ok || !u.ReaderReplaceable() { // must replaceable
