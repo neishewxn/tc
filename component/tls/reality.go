@@ -23,7 +23,7 @@ import (
 	"github.com/metacubex/http"
 	"github.com/metacubex/randv2"
 	"github.com/metacubex/tls"
-	utls "github.com/metacubex/utls"
+	utls "github.com/neishewxn/utls"
 	"golang.org/x/crypto/hkdf"
 )
 

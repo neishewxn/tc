@@ -28,12 +28,12 @@ require (
 	github.com/metacubex/smux v0.0.0-20260105030934-d0c8756d3141
 	github.com/metacubex/tfo-go v0.0.0-20251204144243-738de9e3cd15
 	github.com/metacubex/tls v0.1.4
-	github.com/metacubex/utls v1.8.4
 	github.com/metacubex/wireguard-go v0.0.0-20250820062549-a6cecdd7f57f
 	github.com/miekg/dns v1.1.72
 	github.com/mroth/weightedrand/v2 v2.1.0
 	github.com/neishewxn/sing-shadowsocks v0.2.12
 	github.com/neishewxn/sing-shadowsocks2 v0.2.8
+	github.com/neishewxn/utls v1.8.5
 	github.com/openacid/low v0.1.21
 	github.com/oschwald/maxminddb-golang v1.13.1
 	github.com/samber/lo v1.53.0
@@ -53,7 +53,7 @@ require (
 
 require (
 	github.com/ajg/form v1.5.1 // indirect
-	github.com/andybalholm/brotli v1.0.6 // indirect
+	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect

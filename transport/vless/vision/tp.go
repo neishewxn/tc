@@ -3,7 +3,7 @@ package vision
 import (
 	"reflect"
 
-	utls "github.com/metacubex/utls"
+	utls "github.com/neishewxn/utls"
 )
 
 type SimpleType interface {
