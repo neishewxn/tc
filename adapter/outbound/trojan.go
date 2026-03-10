@@ -95,7 +95,7 @@ func (t *Trojan) StreamConnContext(ctx context.Context, c net.Conn, metadata *C.
 		}
 
 		alpn := trojan.DefaultWebsocketALPN
-		if t.option.ALPN != nil { // structure's Decode will ensure value not nil when input has value even it was set an empty array
+		if t.option.ALPN != nil {
 			alpn = t.option.ALPN
 		}
 
