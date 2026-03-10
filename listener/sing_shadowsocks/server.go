@@ -16,14 +16,14 @@ import (
 	"github.com/metacubex/mihomo/ntp"
 	"github.com/metacubex/mihomo/transport/kcptun"
 
-	shadowsocks "github.com/neishewxn/sing-shadowsocks"
-	"github.com/neishewxn/sing-shadowsocks/shadowaead"
-	"github.com/neishewxn/sing-shadowsocks/shadowaead_2022"
 	"github.com/metacubex/sing/common"
 	"github.com/metacubex/sing/common/buf"
 	"github.com/metacubex/sing/common/bufio"
 	M "github.com/metacubex/sing/common/metadata"
 	"github.com/metacubex/sing/common/network"
+	shadowsocks "github.com/neishewxn/sing-shadowsocks"
+	"github.com/neishewxn/sing-shadowsocks/shadowaead"
+	"github.com/neishewxn/sing-shadowsocks/shadowaead_2022"
 )
 
 type Listener struct {

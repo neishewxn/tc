@@ -5,12 +5,12 @@ go 1.26
 require (
 	github.com/bahlo/generic-list-go v0.2.0
 	github.com/dlclark/regexp2 v1.11.5
+	github.com/gaissmai/bart v0.26.1
 	github.com/gobwas/ws v1.4.0
 	github.com/gofrs/uuid/v5 v5.4.0
 	github.com/golang/snappy v1.0.0
 	github.com/klauspost/compress v1.18.4
 	github.com/mdlayher/netlink v1.9.0
-	github.com/metacubex/bart v0.26.0
 	github.com/metacubex/bbolt v0.0.0-20250725135710-010dbbbb7a5b
 	github.com/metacubex/blake3 v0.1.0
 	github.com/metacubex/chacha v0.1.5

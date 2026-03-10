@@ -9,10 +9,9 @@ import (
 	"github.com/metacubex/mihomo/common/once"
 	"github.com/metacubex/mihomo/common/utils"
 	"github.com/metacubex/mihomo/log"
-
 	"github.com/metacubex/tls"
-	utls "github.com/neishewxn/utls"
 	"github.com/mroth/weightedrand/v2"
+	utls "github.com/neishewxn/utls"
 )
 
 type Conn = utls.Conn

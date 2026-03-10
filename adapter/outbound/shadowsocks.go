@@ -15,10 +15,10 @@ import (
 	obfs "github.com/metacubex/mihomo/transport/simple-obfs"
 	v2rayObfs "github.com/metacubex/mihomo/transport/v2ray-plugin"
 
-	shadowsocks "github.com/neishewxn/sing-shadowsocks2"
 	"github.com/metacubex/sing/common/bufio"
 	M "github.com/metacubex/sing/common/metadata"
 	"github.com/metacubex/sing/common/uot"
+	shadowsocks "github.com/neishewxn/sing-shadowsocks2"
 )
 
 type ShadowSocks struct {
