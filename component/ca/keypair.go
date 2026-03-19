@@ -7,6 +7,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
@@ -19,7 +20,6 @@ import (
 	C "github.com/metacubex/mihomo/constant"
 
 	"github.com/metacubex/fswatch"
-	"github.com/metacubex/tls"
 )
 
 // NewTLSKeyPairLoader creates a loader function for TLS key pairs from the provided certificate and private key data or file paths.

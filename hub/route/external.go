@@ -1,6 +1,6 @@
 package route
 
-import "github.com/metacubex/chi"
+import "github.com/neishewxn/chi"
 
 type externalRouter func(r chi.Router)
 

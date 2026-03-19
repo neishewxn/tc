@@ -2,6 +2,7 @@ package dns
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -16,9 +17,8 @@ import (
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/log"
 
-	"github.com/metacubex/quic-go"
-	"github.com/metacubex/tls"
 	D "github.com/miekg/dns"
+	"github.com/quic-go/quic-go"
 )
 
 const NextProtoDQ = "doq"
@@ -32,10 +32,7 @@ const (
 	QUICCodeInternalError = quic.ApplicationErrorCode(1)
 	// QUICKeepAlivePeriod is the value that we pass to *quic.Config and that
 	// controls the period with with keep-alive frames are being sent to the
-	// connection. We set it to 20s as it would be in the quic-go@v0.27.1 with
-	// KeepAlive field set to true This value is specified in
-	// https://pkg.go.dev/github.com/metacubex/quic-go/internal/protocol#MaxKeepAliveInterval.
-	//
+	// connection.
 	// TODO(ameshkov):  Consider making it configurable.
 	QUICKeepAlivePeriod = time.Second * 20
 	DefaultTimeout      = time.Second * 5
@@ -323,8 +320,6 @@ func (doq *dnsOverQUIC) openConnection(ctx context.Context) (conn *quic.Conn, er
 	}
 
 	transport := quic.Transport{Conn: udp}
-	transport.SetCreatedConn(true) // auto close conn
-	transport.SetSingleUse(true)   // auto close transport
 	conn, err = transport.Dial(ctx, &udpAddr, tlsConfig, doq.getQUICConfig())
 	if err != nil {
 		return nil, fmt.Errorf("opening quic connection to %s: %w", doq.addr, err)

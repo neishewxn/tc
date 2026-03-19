@@ -2,14 +2,13 @@ package vmess
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"net"
 
 	"github.com/metacubex/mihomo/component/ca"
 	"github.com/metacubex/mihomo/component/ech"
 	tlsC "github.com/metacubex/mihomo/component/tls"
-
-	"github.com/metacubex/tls"
 )
 
 type TLSConfig struct {

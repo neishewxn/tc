@@ -2,6 +2,7 @@ package outbound
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net"
@@ -18,7 +19,6 @@ import (
 	"github.com/metacubex/mihomo/transport/vmess"
 
 	"github.com/metacubex/http"
-	"github.com/metacubex/tls"
 )
 
 type Trojan struct {

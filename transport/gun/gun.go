@@ -6,11 +6,14 @@ package gun
 import (
 	"bufio"
 	"context"
+	"crypto/tls"
 	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
 	"net"
+	"net/http"
+	"net/http/httptrace"
 	"net/url"
 	"strings"
 	"sync"
@@ -21,10 +24,7 @@ import (
 	"github.com/metacubex/mihomo/component/ech"
 	tlsC "github.com/metacubex/mihomo/component/tls"
 	C "github.com/metacubex/mihomo/constant"
-
-	"github.com/metacubex/http"
-	"github.com/metacubex/http/httptrace"
-	"github.com/metacubex/tls"
+	"golang.org/x/net/http2"
 )
 
 var (
@@ -274,9 +274,9 @@ func NewHTTP2Client(dialFn DialFn, tlsConfig *tls.Config, clientFingerprint stri
 					return nil, err
 				}
 				state := tlsConn.ConnectionState()
-				if p := state.NegotiatedProtocol; p != http.Http2NextProtoTLS {
+				if p := state.NegotiatedProtocol; p != "h2" {
 					tlsConn.Close()
-					return nil, fmt.Errorf("http2: unexpected ALPN protocol %s, want %s", p, http.Http2NextProtoTLS)
+					return nil, fmt.Errorf("http2: unexpected ALPN protocol %s, want %s", p, "h2")
 				}
 				return tlsConn, nil
 			} else {
@@ -286,9 +286,9 @@ func NewHTTP2Client(dialFn DialFn, tlsConfig *tls.Config, clientFingerprint stri
 					return nil, err
 				}
 				//state := realityConn.(*utls.UConn).ConnectionState()
-				//if p := state.NegotiatedProtocol; p != http.Http2NextProtoTLS {
+				//if p := state.NegotiatedProtocol; p != "h2" {
 				//	realityConn.Close()
-				//	return nil, fmt.Errorf("http2: unexpected ALPN protocol %s, want %s", p, http.Http2NextProtoTLS)
+				//	return nil, fmt.Errorf("http2: unexpected ALPN protocol %s, want %s", p, "h2")
 				//}
 				return realityConn, nil
 			}
@@ -309,14 +309,14 @@ func NewHTTP2Client(dialFn DialFn, tlsConfig *tls.Config, clientFingerprint stri
 			return nil, err
 		}
 		state := conn.ConnectionState()
-		if p := state.NegotiatedProtocol; p != http.Http2NextProtoTLS {
+		if p := state.NegotiatedProtocol; p != "h2" {
 			conn.Close()
-			return nil, fmt.Errorf("http2: unexpected ALPN protocol %s, want %s", p, http.Http2NextProtoTLS)
+			return nil, fmt.Errorf("http2: unexpected ALPN protocol %s, want %s", p, "h2")
 		}
 		return conn, nil
 	}
 
-	transport := &http.Http2Transport{
+	transport := &http2.Transport{
 		DialTLSContext:     dialFunc,
 		TLSClientConfig:    tlsConfig,
 		AllowHTTP:          false,
@@ -326,7 +326,7 @@ func NewHTTP2Client(dialFn DialFn, tlsConfig *tls.Config, clientFingerprint stri
 
 	ctx, cancel := context.WithCancel(context.Background())
 	wrap := &TransportWrap{
-		Http2Transport: transport,
+		Transport: transport,
 		ctx:            ctx,
 		cancel:         cancel,
 	}

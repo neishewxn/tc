@@ -2,14 +2,14 @@ package route
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/metacubex/mihomo/component/updater"
 	"github.com/metacubex/mihomo/log"
 
-	"github.com/metacubex/chi"
-	"github.com/metacubex/chi/render"
-	"github.com/metacubex/http"
+	"github.com/neishewxn/chi"
+	"github.com/neishewxn/chi/render"
 )
 
 func upgradeRouter() http.Handler {

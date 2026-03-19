@@ -2,11 +2,13 @@ package dns
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
 	"net"
+	"net/http"
 	"net/url"
 	"runtime"
 	"slices"
@@ -17,12 +19,11 @@ import (
 	"github.com/metacubex/mihomo/component/ca"
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/log"
+	"golang.org/x/net/http2"
 
-	"github.com/metacubex/http"
-	"github.com/metacubex/quic-go"
-	"github.com/metacubex/quic-go/http3"
-	"github.com/metacubex/tls"
 	D "github.com/miekg/dns"
+	"github.com/quic-go/quic-go"
+	"github.com/quic-go/quic-go/http3"
 )
 
 // Values to configure HTTP and HTTP/2 transport.
@@ -437,8 +438,8 @@ func (doh *dnsOverHTTPS) createTransport(ctx context.Context) (t http.RoundTripp
 	// Explicitly configure transport to use HTTP/2.
 	//
 	// See https://github.com/AdguardTeam/dnsproxy/issues/11.
-	var transportH2 *http.Http2Transport
-	transportH2, err = http.Http2ConfigureTransports(transport)
+	var transportH2 *http2.Transport
+	transportH2, err = http2.ConfigureTransports(transport)
 	if err != nil {
 		return nil, err
 	}
@@ -559,8 +560,6 @@ func (doh *dnsOverHTTPS) dialQuic(ctx context.Context, addr string, tlsCfg *tls.
 		return nil, err
 	}
 	transport := quic.Transport{Conn: conn}
-	transport.SetCreatedConn(true) // auto close conn
-	transport.SetSingleUse(true)   // auto close transport
 	tlsCfg = tlsCfg.Clone()
 	if host, _, err := net.SplitHostPort(doh.url.Host); err == nil {
 		tlsCfg.ServerName = host

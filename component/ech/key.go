@@ -3,6 +3,7 @@ package ech
 import (
 	"crypto/ecdh"
 	"crypto/rand"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/pem"
 	"errors"
@@ -14,7 +15,6 @@ import (
 	C "github.com/metacubex/mihomo/constant"
 
 	"github.com/metacubex/fswatch"
-	"github.com/metacubex/tls"
 	"golang.org/x/crypto/cryptobyte"
 )
 

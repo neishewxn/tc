@@ -2,6 +2,7 @@ package obfs
 
 import (
 	"context"
+	"crypto/tls"
 	"net"
 
 	"github.com/metacubex/mihomo/component/ca"
@@ -9,7 +10,6 @@ import (
 	"github.com/metacubex/mihomo/transport/vmess"
 
 	"github.com/metacubex/http"
-	"github.com/metacubex/tls"
 )
 
 // Option is options of websocket obfs

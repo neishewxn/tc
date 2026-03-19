@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"crypto/tls"
 	"net"
 	"strings"
 
@@ -11,7 +12,6 @@ import (
 	"github.com/metacubex/mihomo/transport/socks5"
 
 	"github.com/metacubex/http"
-	"github.com/metacubex/tls"
 )
 
 func isUpgradeRequest(req *http.Request) bool {

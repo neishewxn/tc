@@ -3,14 +3,14 @@ package route
 import (
 	"bytes"
 	"encoding/json"
+	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/metacubex/mihomo/tunnel/statistic"
 
-	"github.com/metacubex/chi"
-	"github.com/metacubex/chi/render"
-	"github.com/metacubex/http"
+	"github.com/neishewxn/chi"
+	"github.com/neishewxn/chi/render"
 )
 
 func connectionRouter() http.Handler {

@@ -14,12 +14,10 @@ require (
 	github.com/metacubex/bbolt v0.0.0-20250725135710-010dbbbb7a5b
 	github.com/metacubex/blake3 v0.1.0
 	github.com/metacubex/chacha v0.1.5
-	github.com/metacubex/chi v0.1.0
 	github.com/metacubex/cpu v0.1.1
 	github.com/metacubex/fswatch v0.1.1
 	github.com/metacubex/http v0.1.0
 	github.com/metacubex/kcp-go v0.0.0-20260105040817-550693377604
-	github.com/metacubex/quic-go v0.59.1-0.20260128071132-0f3233b973af
 	github.com/metacubex/randv2 v0.2.0
 	github.com/metacubex/sing v0.5.7
 	github.com/metacubex/sing-mux v0.3.5
@@ -27,15 +25,16 @@ require (
 	github.com/metacubex/sing-vmess v0.2.5
 	github.com/metacubex/smux v0.0.0-20260105030934-d0c8756d3141
 	github.com/metacubex/tfo-go v0.0.0-20251204144243-738de9e3cd15
-	github.com/metacubex/tls v0.1.4
 	github.com/metacubex/wireguard-go v0.0.0-20250820062549-a6cecdd7f57f
 	github.com/miekg/dns v1.1.72
 	github.com/mroth/weightedrand/v2 v2.1.0
+	github.com/neishewxn/chi v0.1.1
 	github.com/neishewxn/sing-shadowsocks v0.2.12
 	github.com/neishewxn/sing-shadowsocks2 v0.2.8
 	github.com/neishewxn/utls v1.8.5
 	github.com/openacid/low v0.1.21
 	github.com/oschwald/maxminddb-golang v1.13.1
+	github.com/quic-go/quic-go v0.59.0
 	github.com/samber/lo v1.53.0
 	github.com/sirupsen/logrus v1.9.4
 	github.com/stretchr/testify v1.11.1
@@ -61,7 +60,6 @@ require (
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/google/pprof v0.0.0-20240727154555-813a5fbdbec8 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.6 // indirect
 	github.com/klauspost/reedsolomon v1.12.3 // indirect
 	github.com/kr/text v0.2.0 // indirect
@@ -71,9 +69,10 @@ require (
 	github.com/metacubex/hpke v0.1.0 // indirect
 	github.com/metacubex/mlkem v0.1.0 // indirect
 	github.com/metacubex/nftables v0.0.0-20250503052935-30a69ab87793 // indirect
-	github.com/metacubex/qpack v0.6.0 // indirect
+	github.com/metacubex/tls v0.1.4 // indirect
 	github.com/metacubex/yamux v0.0.0-20250918083631-dd5f17c0be49 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/sagernet/netlink v0.0.0-20240612041022-b9a21c07ac6a // indirect
 	github.com/vishvananda/netns v0.0.4 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect

@@ -5,7 +5,7 @@ package vision
 
 import (
 	"bytes"
-	gotls "crypto/tls"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net"
@@ -18,7 +18,6 @@ import (
 	"github.com/metacubex/mihomo/transport/vless/encryption"
 
 	"github.com/gofrs/uuid/v5"
-	"github.com/metacubex/tls"
 )
 
 var ErrNotHandshakeComplete = errors.New("tls connection not handshake complete")
@@ -41,11 +40,6 @@ func NewConn(conn net.Conn, tlsConn net.Conn, userUUID uuid.UUID) (*Conn, error)
 	var upstream any = tlsConn
 	for {
 		switch underlying := upstream.(type) {
-		case *gotls.Conn:
-			tlsConn = underlying
-			c.netConn = underlying.NetConn()
-			t = reflect.TypeFor[gotls.Conn]()
-			p = unsafe.Pointer(underlying)
 		case *tls.Conn:
 			tlsConn = underlying
 			c.netConn = underlying.NetConn()
@@ -103,14 +97,6 @@ func NewConn(conn net.Conn, tlsConn net.Conn, userUUID uuid.UUID) (*Conn, error)
 
 func checkTLSVersion(tlsConn net.Conn) error {
 	switch underlying := tlsConn.(type) {
-	case *gotls.Conn:
-		state := underlying.ConnectionState()
-		if !state.HandshakeComplete {
-			return ErrNotHandshakeComplete
-		}
-		if state.Version != gotls.VersionTLS13 {
-			return ErrNotTLS13
-		}
 	case *tls.Conn:
 		state := underlying.ConnectionState()
 		if !state.HandshakeComplete {

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/binary"
 	"errors"
@@ -26,7 +27,6 @@ import (
 	"github.com/gobwas/ws/wsutil"
 	"github.com/metacubex/http"
 	"github.com/metacubex/randv2"
-	"github.com/metacubex/tls"
 )
 
 type websocketConn struct {

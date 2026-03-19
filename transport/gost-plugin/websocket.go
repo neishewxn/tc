@@ -3,6 +3,7 @@ package gost
 import (
 	"context"
 	"net"
+	"crypto/tls"
 
 	"github.com/metacubex/mihomo/component/ca"
 	"github.com/metacubex/mihomo/component/ech"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/metacubex/http"
 	"github.com/metacubex/smux"
-	"github.com/metacubex/tls"
 )
 
 // Option is options of gost websocket

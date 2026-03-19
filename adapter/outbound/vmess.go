@@ -2,6 +2,7 @@ package outbound
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net"
@@ -23,7 +24,6 @@ import (
 	vmess "github.com/metacubex/sing-vmess"
 	"github.com/metacubex/sing-vmess/packetaddr"
 	M "github.com/metacubex/sing/common/metadata"
-	"github.com/metacubex/tls"
 )
 
 var ErrUDPRemoteAddrMismatch = errors.New("udp packet dropped due to mismatched remote address")

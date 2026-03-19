@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
+	"crypto/tls"
 	"encoding/base64"
 	"fmt"
 	"io"
 	"net"
+	"net/http"
 	"net/netip"
 	"strconv"
 	"sync"
@@ -23,10 +25,8 @@ import (
 	"github.com/metacubex/mihomo/component/generator"
 	C "github.com/metacubex/mihomo/constant"
 
-	"github.com/metacubex/chi"
-	"github.com/metacubex/chi/render"
-	"github.com/metacubex/http"
-	"github.com/metacubex/tls"
+	"github.com/neishewxn/chi"
+	"github.com/neishewxn/chi/render"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -1,6 +1,7 @@
 package trojan
 
 import (
+	"crypto/tls"
 	"errors"
 	"io"
 	"net"
@@ -24,7 +25,6 @@ import (
 
 	"github.com/metacubex/http"
 	"github.com/metacubex/smux"
-	"github.com/metacubex/tls"
 )
 
 type Listener struct {

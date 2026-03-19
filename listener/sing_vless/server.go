@@ -2,6 +2,7 @@ package sing_vless
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"net"
 	"strings"
@@ -21,7 +22,6 @@ import (
 	"github.com/metacubex/http"
 	"github.com/metacubex/sing/common"
 	"github.com/metacubex/sing/common/metadata"
-	"github.com/metacubex/tls"
 )
 
 type Listener struct {

@@ -3,8 +3,10 @@ package route
 import (
 	"bytes"
 	"crypto/subtle"
+	"crypto/tls"
 	"encoding/json"
 	"net"
+	"net/http"
 	"os"
 	"path/filepath"
 	"runtime/debug"
@@ -21,12 +23,10 @@ import (
 	"github.com/metacubex/mihomo/ntp"
 	"github.com/metacubex/mihomo/tunnel/statistic"
 
-	"github.com/metacubex/chi"
-	"github.com/metacubex/chi/cors"
-	"github.com/metacubex/chi/middleware"
-	"github.com/metacubex/chi/render"
-	"github.com/metacubex/http"
-	"github.com/metacubex/tls"
+	"github.com/neishewxn/chi"
+	"github.com/neishewxn/chi/cors"
+	"github.com/neishewxn/chi/middleware"
+	"github.com/neishewxn/chi/render"
 )
 
 var (

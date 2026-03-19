@@ -2,6 +2,7 @@ package sing_vmess
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"net"
 	"net/url"
@@ -22,7 +23,6 @@ import (
 	vmess "github.com/metacubex/sing-vmess"
 	"github.com/metacubex/sing/common"
 	"github.com/metacubex/sing/common/metadata"
-	"github.com/metacubex/tls"
 )
 
 type Listener struct {

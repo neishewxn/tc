@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/url"
 	"strings"
+	"net/http"
 	"time"
 
 	"github.com/metacubex/mihomo/common/atomic"
@@ -16,8 +17,6 @@ import (
 	"github.com/metacubex/mihomo/component/ca"
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/log"
-
-	"github.com/metacubex/http"
 )
 
 var UnifiedDelay = atomic.NewBool(false)

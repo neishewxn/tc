@@ -2,13 +2,13 @@ package route
 
 import (
 	"time"
+	"net/http"
 
 	"github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/tunnel"
 
-	"github.com/metacubex/chi"
-	"github.com/metacubex/chi/render"
-	"github.com/metacubex/http"
+	"github.com/neishewxn/chi"
+	"github.com/neishewxn/chi/render"
 )
 
 func ruleRouter() http.Handler {
