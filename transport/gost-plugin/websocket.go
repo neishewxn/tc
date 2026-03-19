@@ -2,14 +2,14 @@ package gost
 
 import (
 	"context"
-	"net"
 	"crypto/tls"
+	"net"
+	"net/http"
 
 	"github.com/metacubex/mihomo/component/ca"
 	"github.com/metacubex/mihomo/component/ech"
 	"github.com/metacubex/mihomo/transport/vmess"
 
-	"github.com/metacubex/http"
 	"github.com/metacubex/smux"
 )
 

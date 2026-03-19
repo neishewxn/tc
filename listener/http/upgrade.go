@@ -4,14 +4,13 @@ import (
 	"context"
 	"crypto/tls"
 	"net"
+	"net/http"
 	"strings"
 
 	"github.com/metacubex/mihomo/adapter/inbound"
 	N "github.com/metacubex/mihomo/common/net"
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/transport/socks5"
-
-	"github.com/metacubex/http"
 )
 
 func isUpgradeRequest(req *http.Request) bool {

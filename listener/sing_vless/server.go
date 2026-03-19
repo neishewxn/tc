@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"net"
+	"net/http"
 	"strings"
 
 	"github.com/metacubex/mihomo/adapter/inbound"
@@ -19,7 +20,6 @@ import (
 	"github.com/metacubex/mihomo/transport/vless/encryption"
 	mihomoVMess "github.com/metacubex/mihomo/transport/vmess"
 
-	"github.com/metacubex/http"
 	"github.com/metacubex/sing/common"
 	"github.com/metacubex/sing/common/metadata"
 )

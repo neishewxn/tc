@@ -9,14 +9,13 @@ import (
 	"fmt"
 	"maps"
 	"net"
+	"net/http"
 	"strconv"
 	"strings"
 
 	N "github.com/metacubex/mihomo/common/net"
 	"github.com/metacubex/mihomo/component/ca"
 	C "github.com/metacubex/mihomo/constant"
-
-	"github.com/metacubex/http"
 )
 
 type Http struct {

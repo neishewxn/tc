@@ -4,10 +4,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"net"
+	"net/http"
 	"net/netip"
 	"strings"
-
-	"github.com/metacubex/http"
 )
 
 // removeHopByHopHeaders remove Proxy-* headers

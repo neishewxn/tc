@@ -274,9 +274,9 @@ func NewHTTP2Client(dialFn DialFn, tlsConfig *tls.Config, clientFingerprint stri
 					return nil, err
 				}
 				state := tlsConn.ConnectionState()
-				if p := state.NegotiatedProtocol; p != "h2" {
+				if p := state.NegotiatedProtocol; p != http2.NextProtoTLS {
 					tlsConn.Close()
-					return nil, fmt.Errorf("http2: unexpected ALPN protocol %s, want %s", p, "h2")
+					return nil, fmt.Errorf("http2: unexpected ALPN protocol %s, want %s", p,  http2.NextProtoTLS)
 				}
 				return tlsConn, nil
 			} else {
@@ -309,9 +309,9 @@ func NewHTTP2Client(dialFn DialFn, tlsConfig *tls.Config, clientFingerprint stri
 			return nil, err
 		}
 		state := conn.ConnectionState()
-		if p := state.NegotiatedProtocol; p != "h2" {
+		if p := state.NegotiatedProtocol; p !=  http2.NextProtoTLS {
 			conn.Close()
-			return nil, fmt.Errorf("http2: unexpected ALPN protocol %s, want %s", p, "h2")
+			return nil, fmt.Errorf("http2: unexpected ALPN protocol %s, want %s", p,  http2.NextProtoTLS)
 		}
 		return conn, nil
 	}

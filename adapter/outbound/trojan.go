@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"strconv"
 
 	N "github.com/metacubex/mihomo/common/net"
@@ -17,8 +18,6 @@ import (
 	"github.com/metacubex/mihomo/transport/shadowsocks/core"
 	"github.com/metacubex/mihomo/transport/trojan"
 	"github.com/metacubex/mihomo/transport/vmess"
-
-	"github.com/metacubex/http"
 )
 
 type Trojan struct {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net"
+	"net/http"
 	"strings"
 
 	"github.com/metacubex/mihomo/adapter/inbound"
@@ -23,7 +24,6 @@ import (
 	"github.com/metacubex/mihomo/transport/trojan"
 	mihomoVMess "github.com/metacubex/mihomo/transport/vmess"
 
-	"github.com/metacubex/http"
 	"github.com/metacubex/smux"
 )
 
