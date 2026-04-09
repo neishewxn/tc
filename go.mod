@@ -9,7 +9,7 @@ require (
 	github.com/gobwas/ws v1.4.0
 	github.com/gofrs/uuid/v5 v5.4.0
 	github.com/golang/snappy v1.0.0
-	github.com/klauspost/compress v1.18.4
+	github.com/klauspost/compress v1.18.5
 	github.com/mdlayher/netlink v1.9.0
 	github.com/metacubex/bbolt v0.0.0-20250725135710-010dbbbb7a5b
 	github.com/metacubex/blake3 v0.1.0
@@ -44,7 +44,7 @@ require (
 	golang.org/x/exp v0.0.0-20260312153236-7ab1446f8b90
 	golang.org/x/net v0.52.0
 	golang.org/x/sync v0.20.0
-	golang.org/x/sys v0.42.0
+	golang.org/x/sys v0.43.0
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -68,6 +68,7 @@ require (
 	github.com/metacubex/yamux v0.0.0-20250918083631-dd5f17c0be49 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
+	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/sagernet/netlink v0.0.0-20240612041022-b9a21c07ac6a // indirect
 	github.com/vishvananda/netns v0.0.4 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
