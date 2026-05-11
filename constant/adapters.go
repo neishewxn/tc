@@ -30,7 +30,6 @@ const (
 	LoadBalance
 
 	Shadowsocks
-	ShadowsocksR
 	Socks5
 	Http
 	Vmess
@@ -183,8 +182,6 @@ func (at AdapterType) String() string {
 		return "Dns"
 	case Shadowsocks:
 		return "Shadowsocks"
-	case ShadowsocksR:
-		return "ShadowsocksR"
 	case Socks5:
 		return "Socks5"
 	case Http:
