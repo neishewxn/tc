@@ -1,12 +1,12 @@
 package inbound_test
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/metacubex/mihomo/adapter/outbound"
 
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/exp/slices"
 )
 
 var singMuxProtocolList = []string{"h2mux", "smux", "yamux"}

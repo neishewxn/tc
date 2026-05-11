@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net"
+	"slices"
 	"strings"
 
 	"github.com/metacubex/mihomo/adapter/inbound"
@@ -23,7 +24,6 @@ import (
 	"github.com/metacubex/sing/common"
 	"github.com/metacubex/sing/common/metadata"
 	"github.com/metacubex/tls"
-	"golang.org/x/exp/slices"
 )
 
 type Listener struct {

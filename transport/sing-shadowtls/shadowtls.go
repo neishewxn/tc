@@ -3,14 +3,14 @@ package sing_shadowtls
 import (
 	"context"
 	"net"
+	"slices"
 
 	"github.com/metacubex/mihomo/component/ca"
 	tlsC "github.com/metacubex/mihomo/component/tls"
 	"github.com/metacubex/mihomo/log"
 
-	"github.com/metacubex/sing-shadowtls"
+	shadowtls "github.com/metacubex/sing-shadowtls"
 	"github.com/metacubex/tls"
-	"golang.org/x/exp/slices"
 )
 
 const (

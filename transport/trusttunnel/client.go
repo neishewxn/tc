@@ -7,6 +7,7 @@ import (
 	"io"
 	"net"
 	"net/url"
+	"slices"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -19,7 +20,6 @@ import (
 
 	"github.com/metacubex/http"
 	"github.com/metacubex/tls"
-	"golang.org/x/exp/slices"
 )
 
 type DialOptionsFunc func() []dialer.Option

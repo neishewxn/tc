@@ -5,11 +5,11 @@ package dns
 import (
 	"net/netip"
 	"os"
+	"slices"
 	"strconv"
 	"syscall"
 	"unsafe"
 
-	"golang.org/x/exp/slices"
 	"golang.org/x/sys/windows"
 )
 

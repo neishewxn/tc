@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 	"reflect"
+	"slices"
 	"unsafe"
 
 	"github.com/metacubex/mihomo/common/once"
@@ -13,7 +14,6 @@ import (
 	"github.com/metacubex/tls"
 	utls "github.com/metacubex/utls"
 	"github.com/mroth/weightedrand/v2"
-	"golang.org/x/exp/slices"
 )
 
 type Conn = utls.Conn
