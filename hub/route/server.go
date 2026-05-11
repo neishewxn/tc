@@ -3,10 +3,8 @@ package route
 import (
 	"bytes"
 	"crypto/subtle"
-	"crypto/tls"
 	"encoding/json"
 	"net"
-	"net/http"
 	"os"
 	"path/filepath"
 	"runtime/debug"
@@ -23,10 +21,12 @@ import (
 	"github.com/metacubex/mihomo/ntp"
 	"github.com/metacubex/mihomo/tunnel/statistic"
 
-	"github.com/neishewxn/chi"
-	"github.com/neishewxn/chi/cors"
-	"github.com/neishewxn/chi/middleware"
-	"github.com/neishewxn/chi/render"
+	"github.com/metacubex/chi"
+	"github.com/metacubex/chi/cors"
+	"github.com/metacubex/chi/middleware"
+	"github.com/metacubex/chi/render"
+	"github.com/metacubex/http"
+	"github.com/metacubex/tls"
 )
 
 var (
@@ -132,6 +132,7 @@ func router(isDebug bool, secret string, dohServer string, cors Cors) *chi.Mux {
 		r.Mount("/providers/rules", ruleProviderRouter())
 		r.Mount("/cache", cacheRouter())
 		r.Mount("/dns", dnsRouter())
+		r.Mount("/storage", storageRouter())
 		if !embedMode { // disallow restart in embed mode
 			r.Mount("/restart", restartRouter())
 		}

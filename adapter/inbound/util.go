@@ -4,11 +4,11 @@ import (
 	"net"
 	"net/netip"
 	"strings"
-	"net/http"
 
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/transport/socks5"
 
+	"github.com/metacubex/http"
 )
 
 func parseSocksAddr(target socks5.Addr) *C.Metadata {

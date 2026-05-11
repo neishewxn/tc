@@ -5,7 +5,7 @@ package vision
 
 import (
 	"bytes"
-	"crypto/tls"
+	gotls "crypto/tls"
 	"errors"
 	"fmt"
 	"net"
@@ -18,6 +18,7 @@ import (
 	"github.com/metacubex/mihomo/transport/vless/encryption"
 
 	"github.com/gofrs/uuid/v5"
+	"github.com/metacubex/tls"
 )
 
 var ErrNotHandshakeComplete = errors.New("tls connection not handshake complete")
@@ -35,31 +36,47 @@ func NewConn(conn net.Conn, tlsConn net.Conn, userUUID uuid.UUID) (*Conn, error)
 		writeFilterApplicationData: true,
 		writeOnceUserUUID:          userUUID.Bytes(),
 	}
-	var t SimpleType
+	var t reflect.Type
 	var p unsafe.Pointer
 	var upstream any = tlsConn
 	for {
 		switch underlying := upstream.(type) {
+		case *gotls.Conn:
+			//log.Debugln("type tls")
+			tlsConn = underlying
+			c.netConn = underlying.NetConn()
+			t = reflect.TypeOf(underlying).Elem()
+			p = unsafe.Pointer(underlying)
+			break
 		case *tls.Conn:
+			//log.Debugln("type tls")
 			tlsConn = underlying
 			c.netConn = underlying.NetConn()
-			t = reflect.TypeFor[tls.Conn]()
+			t = reflect.TypeOf(underlying).Elem()
 			p = unsafe.Pointer(underlying)
+			break
 		case *tlsC.Conn:
+			//log.Debugln("type *tlsC.Conn")
 			tlsConn = underlying
 			c.netConn = underlying.NetConn()
-			t = reflect.TypeFor[tlsC.Conn]()
+			t = reflect.TypeOf(underlying).Elem()
 			p = unsafe.Pointer(underlying)
+			break
 		case *tlsC.UConn:
+			//log.Debugln("type *tlsC.UConn")
 			tlsConn = underlying
 			c.netConn = underlying.NetConn()
-			t = utlsType
+			t = reflect.TypeOf(underlying.Conn).Elem()
+			//log.Debugln("t:%v", t)
 			p = unsafe.Pointer(underlying.Conn)
+			break
 		case *encryption.CommonConn:
+			//log.Debugln("type *encryption.CommonConn")
 			tlsConn = underlying
 			c.netConn = underlying.Conn
-			t = reflect.TypeFor[encryption.CommonConn]()
+			t = reflect.TypeOf(underlying).Elem()
 			p = unsafe.Pointer(underlying)
+			break
 		}
 		if u, ok := upstream.(N.ReaderWithUpstream); !ok || !u.ReaderReplaceable() { // must replaceable
 			break
@@ -97,6 +114,14 @@ func NewConn(conn net.Conn, tlsConn net.Conn, userUUID uuid.UUID) (*Conn, error)
 
 func checkTLSVersion(tlsConn net.Conn) error {
 	switch underlying := tlsConn.(type) {
+	case *gotls.Conn:
+		state := underlying.ConnectionState()
+		if !state.HandshakeComplete {
+			return ErrNotHandshakeComplete
+		}
+		if state.Version != gotls.VersionTLS13 {
+			return ErrNotTLS13
+		}
 	case *tls.Conn:
 		state := underlying.ConnectionState()
 		if !state.HandshakeComplete {

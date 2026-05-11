@@ -2,14 +2,14 @@ package convert
 
 import (
 	"encoding/base64"
-	"net/http"
 	"strings"
 	"time"
 
 	"github.com/metacubex/mihomo/common/utils"
 
+	"github.com/metacubex/http"
 	"github.com/metacubex/randv2"
-	"github.com/neishewxn/sing-shadowsocks/shadowimpl"
+	"github.com/metacubex/sing-shadowsocks/shadowimpl"
 )
 
 var hostsSuffix = []string{

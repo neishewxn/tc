@@ -209,6 +209,12 @@ func dualStackDialContext(ctx context.Context, dialFn dialFunc, network string, 
 	if len(ipv4s) == 0 && len(ipv6s) == 0 {
 		return nil, ErrorNoIpAddress
 	}
+	if len(ipv4s) == 0 && len(ipv6s) != 0 {
+		return dialFn(ctx, network, ipv6s, port, opt)
+	}
+	if len(ipv4s) != 0 && len(ipv6s) == 0 {
+		return dialFn(ctx, network, ipv4s, port, opt)
+	}
 
 	preferIPVersion := opt.prefer
 	fallbackTicker := time.NewTicker(dualStackFallbackTimeout)
@@ -289,6 +295,9 @@ func parallelDialContext(ctx context.Context, network string, ips []netip.Addr, 
 	if len(ips) == 0 {
 		return nil, ErrorNoIpAddress
 	}
+	if len(ips) == 1 {
+		return dialContext(ctx, network, ips[0], port, opt)
+	}
 	results := make(chan dialResult)
 	returned := make(chan struct{})
 	defer close(returned)
@@ -310,7 +319,7 @@ func parallelDialContext(ctx context.Context, network string, ips []netip.Addr, 
 		go racer(ctx, ip)
 	}
 	var errs []error
-	for range ips {
+	for i := 0; i < len(ips); i++ {
 		res := <-results
 		if res.error == nil {
 			return res.Conn, nil

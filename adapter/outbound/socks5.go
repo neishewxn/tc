@@ -2,7 +2,6 @@ package outbound
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -14,6 +13,8 @@ import (
 	"github.com/metacubex/mihomo/component/ca"
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/transport/socks5"
+
+	"github.com/metacubex/tls"
 )
 
 type Socks5 struct {
@@ -97,8 +98,6 @@ func (ss *Socks5) ListenPacketContext(ctx context.Context, metadata *C.Metadata)
 
 	if ss.tls {
 		cc := tls.Client(c, ss.tlsConfig)
-		ctx, cancel := context.WithTimeout(context.Background(), C.DefaultTLSTimeout)
-		defer cancel()
 		err = cc.HandshakeContext(ctx)
 		c = cc
 	}
@@ -186,18 +185,18 @@ func NewSocks5(option Socks5Option) (*Socks5, error) {
 	}
 
 	outbound := &Socks5{
-		Base: &Base{
-			name:   option.Name,
-			addr:   net.JoinHostPort(option.Server, strconv.Itoa(option.Port)),
-			tp:     C.Socks5,
-			pdName: option.ProviderName,
-			udp:    option.UDP,
-			tfo:    option.TFO,
-			mpTcp:  option.MPTCP,
-			iface:  option.Interface,
-			rmark:  option.RoutingMark,
-			prefer: option.IPVersion,
-		},
+		Base: NewBase(BaseOption{
+			Name:         option.Name,
+			Addr:         net.JoinHostPort(option.Server, strconv.Itoa(option.Port)),
+			Type:         C.Socks5,
+			ProviderName: option.ProviderName,
+			UDP:          option.UDP,
+			TFO:          option.TFO,
+			MPTCP:        option.MPTCP,
+			Interface:    option.Interface,
+			RoutingMark:  option.RoutingMark,
+			Prefer:       option.IPVersion,
+		}),
 		option:         &option,
 		user:           option.UserName,
 		pass:           option.Password,

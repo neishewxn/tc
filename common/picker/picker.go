@@ -60,8 +60,10 @@ func (p *Picker[T]) Error() error {
 // Go calls the given function in a new goroutine.
 // The first call to return a nil error cancels the group; its result will be returned by Wait.
 func (p *Picker[T]) Go(f func() (T, error)) {
+	p.wg.Add(1)
 
-	p.wg.Go(func() {
+	go func() {
+		defer p.wg.Done()
 
 		if ret, err := f(); err == nil {
 			p.once.Do(func() {
@@ -76,7 +78,7 @@ func (p *Picker[T]) Go(f func() (T, error)) {
 				p.err = err
 			})
 		}
-	})
+	}()
 }
 
 // Close cancels the picker context and releases resources associated with it.

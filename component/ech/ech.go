@@ -2,10 +2,10 @@ package ech
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 
 	tlsC "github.com/metacubex/mihomo/component/tls"
+	"github.com/metacubex/tls"
 )
 
 type Config struct {

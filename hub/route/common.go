@@ -6,7 +6,6 @@ import (
 	"errors"
 	"io"
 	"net"
-	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
@@ -14,7 +13,8 @@ import (
 
 	N "github.com/metacubex/mihomo/common/net"
 
-	"github.com/neishewxn/chi"
+	"github.com/metacubex/chi"
+	"github.com/metacubex/http"
 )
 
 // When name is composed of a partial escape string, Golang does not unescape it

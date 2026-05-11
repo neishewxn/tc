@@ -45,6 +45,7 @@ func testInboundVMess(t *testing.T, inboundOptions inbound.VmessOption, outbound
 	outboundOptions.UUID = userUUID
 	outboundOptions.AlterID = 0
 	outboundOptions.Cipher = "auto"
+	outboundOptions.DialerForAPI = tunnel.NewDialer()
 
 	out, err := outbound.NewVmess(outboundOptions)
 	if !assert.NoError(t, err) {
@@ -218,6 +219,37 @@ func TestInboundVMess_Wss2(t *testing.T) {
 	testInboundVMessTLS(t, inboundOptions, outboundOptions)
 }
 
+func TestInboundVMess_Grpc1(t *testing.T) {
+	inboundOptions := inbound.VmessOption{
+		Certificate:     tlsCertificate,
+		PrivateKey:      tlsPrivateKey,
+		GrpcServiceName: "GunService",
+	}
+	outboundOptions := outbound.VmessOption{
+		TLS:         true,
+		Fingerprint: tlsFingerprint,
+		Network:     "grpc",
+		GrpcOpts:    outbound.GrpcOptions{GrpcServiceName: "GunService"},
+	}
+	testInboundVMessTLS(t, inboundOptions, outboundOptions)
+}
+
+func TestInboundVMess_Grpc2(t *testing.T) {
+	inboundOptions := inbound.VmessOption{
+		Certificate:     tlsCertificate,
+		PrivateKey:      tlsPrivateKey,
+		WsPath:          "/ws",
+		GrpcServiceName: "GunService",
+	}
+	outboundOptions := outbound.VmessOption{
+		TLS:         true,
+		Fingerprint: tlsFingerprint,
+		Network:     "grpc",
+		GrpcOpts:    outbound.GrpcOptions{GrpcServiceName: "GunService"},
+	}
+	testInboundVMessTLS(t, inboundOptions, outboundOptions)
+}
+
 func TestInboundVMess_Reality(t *testing.T) {
 	inboundOptions := inbound.VmessOption{
 		RealityConfig: inbound.RealityConfig{
@@ -235,6 +267,30 @@ func TestInboundVMess_Reality(t *testing.T) {
 			ShortID:   realityShortid,
 		},
 		ClientFingerprint: "chrome",
+	}
+	testInboundVMess(t, inboundOptions, outboundOptions)
+}
+
+func TestInboundVMess_Reality_Grpc(t *testing.T) {
+	inboundOptions := inbound.VmessOption{
+		RealityConfig: inbound.RealityConfig{
+			Dest:        net.JoinHostPort(realityDest, "443"),
+			PrivateKey:  realityPrivateKey,
+			ShortID:     []string{realityShortid},
+			ServerNames: []string{realityDest},
+		},
+		GrpcServiceName: "GunService",
+	}
+	outboundOptions := outbound.VmessOption{
+		TLS:        true,
+		ServerName: realityDest,
+		RealityOpts: outbound.RealityOptions{
+			PublicKey: realityPublickey,
+			ShortID:   realityShortid,
+		},
+		ClientFingerprint: "chrome",
+		Network:           "grpc",
+		GrpcOpts:          outbound.GrpcOptions{GrpcServiceName: "GunService"},
 	}
 	testInboundVMess(t, inboundOptions, outboundOptions)
 }

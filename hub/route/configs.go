@@ -1,7 +1,6 @@
 package route
 
 import (
-	"net/http"
 	"net/netip"
 	"path/filepath"
 
@@ -18,8 +17,9 @@ import (
 	"github.com/metacubex/mihomo/log"
 	"github.com/metacubex/mihomo/tunnel"
 
-	"github.com/neishewxn/chi"
-	"github.com/neishewxn/chi/render"
+	"github.com/metacubex/chi"
+	"github.com/metacubex/chi/render"
+	"github.com/metacubex/http"
 )
 
 func configRouter() http.Handler {
@@ -93,6 +93,8 @@ type tunSchema struct {
 	IncludeAndroidUser                    *[]int          `yaml:"include-android-user" json:"include-android-user,omitempty"`
 	IncludePackage                        *[]string       `yaml:"include-package" json:"include-package,omitempty"`
 	ExcludePackage                        *[]string       `yaml:"exclude-package" json:"exclude-package,omitempty"`
+	IncludeMACAddress                     *[]string       `yaml:"include-mac-address" json:"include-mac-address,omitempty"`
+	ExcludeMACAddress                     *[]string       `yaml:"exclude-mac-address" json:"exclude-mac-address,omitempty"`
 	EndpointIndependentNat                *bool           `yaml:"endpoint-independent-nat" json:"endpoint-independent-nat,omitempty"`
 	UDPTimeout                            *int64          `yaml:"udp-timeout" json:"udp-timeout,omitempty"`
 	FileDescriptor                        *int            `yaml:"file-descriptor" json:"file-descriptor"`
@@ -120,6 +122,7 @@ type tuicServerSchema struct {
 	ALPN                  *[]string          `yaml:"alpn" json:"alpn,omitempty"`
 	MaxUdpRelayPacketSize *int               `yaml:"max-udp-relay-packet-size" json:"max-udp-relay-packet-size,omitempty"`
 	CWND                  *int               `yaml:"cwnd" json:"cwnd,omitempty"`
+	BBRProfile            *string            `yaml:"bbr-profile" json:"bbr-profile,omitempty"`
 }
 
 func getConfigs(w http.ResponseWriter, r *http.Request) {
@@ -242,6 +245,12 @@ func pointerOrDefaultTun(p *tunSchema, def LC.Tun) LC.Tun {
 		if p.ExcludePackage != nil {
 			def.ExcludePackage = *p.ExcludePackage
 		}
+		if p.IncludeMACAddress != nil {
+			def.IncludeMACAddress = *p.IncludeMACAddress
+		}
+		if p.ExcludeMACAddress != nil {
+			def.ExcludeMACAddress = *p.ExcludeMACAddress
+		}
 		if p.EndpointIndependentNat != nil {
 			def.EndpointIndependentNat = *p.EndpointIndependentNat
 		}
@@ -256,6 +265,49 @@ func pointerOrDefaultTun(p *tunSchema, def LC.Tun) LC.Tun {
 		}
 		if p.SendMsgX != nil {
 			def.SendMsgX = *p.SendMsgX
+		}
+	}
+	return def
+}
+
+func pointerOrDefaultTuicServer(p *tuicServerSchema, def LC.TuicServer) LC.TuicServer {
+	if p != nil {
+		def.Enable = p.Enable
+		if p.Listen != nil {
+			def.Listen = *p.Listen
+		}
+		if p.Token != nil {
+			def.Token = *p.Token
+		}
+		if p.Users != nil {
+			def.Users = *p.Users
+		}
+		if p.Certificate != nil {
+			def.Certificate = *p.Certificate
+		}
+		if p.PrivateKey != nil {
+			def.PrivateKey = *p.PrivateKey
+		}
+		if p.CongestionController != nil {
+			def.CongestionController = *p.CongestionController
+		}
+		if p.MaxIdleTime != nil {
+			def.MaxIdleTime = *p.MaxIdleTime
+		}
+		if p.AuthenticationTimeout != nil {
+			def.AuthenticationTimeout = *p.AuthenticationTimeout
+		}
+		if p.ALPN != nil {
+			def.ALPN = *p.ALPN
+		}
+		if p.MaxUdpRelayPacketSize != nil {
+			def.MaxUdpRelayPacketSize = *p.MaxUdpRelayPacketSize
+		}
+		if p.CWND != nil {
+			def.CWND = *p.CWND
+		}
+		if p.BBRProfile != nil {
+			def.BBRProfile = *p.BBRProfile
 		}
 	}
 	return def
@@ -311,6 +363,7 @@ func patchConfigs(w http.ResponseWriter, r *http.Request) {
 	listener.ReCreateTun(pointerOrDefaultTun(general.Tun, listener.LastTunConf), tunnel.Tunnel)
 	listener.ReCreateShadowSocks(pointerOrDefault(general.ShadowSocksConfig, ports.ShadowSocksConfig), tunnel.Tunnel)
 	listener.ReCreateVmess(pointerOrDefault(general.VmessConfig, ports.VmessConfig), tunnel.Tunnel)
+	listener.ReCreateTuic(pointerOrDefaultTuicServer(general.TuicServer, listener.LastTuicConf), tunnel.Tunnel)
 
 	if general.Mode != nil {
 		tunnel.SetMode(*general.Mode)

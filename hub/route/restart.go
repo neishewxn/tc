@@ -2,7 +2,6 @@ package route
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
@@ -11,8 +10,9 @@ import (
 	"github.com/metacubex/mihomo/hub/executor"
 	"github.com/metacubex/mihomo/log"
 
-	"github.com/neishewxn/chi"
-	"github.com/neishewxn/chi/render"
+	"github.com/metacubex/chi"
+	"github.com/metacubex/chi/render"
+	"github.com/metacubex/http"
 )
 
 func restartRouter() http.Handler {

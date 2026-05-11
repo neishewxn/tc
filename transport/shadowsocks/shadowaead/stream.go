@@ -35,7 +35,6 @@ func (w *Writer) Write(p []byte) (n int, err error) {
 	tag := w.Overhead()
 	off := 2 + tag
 
-	// compatible with snell
 	if len(p) == 0 {
 		buf = buf[:off]
 		buf[0], buf[1] = byte(0), byte(0)

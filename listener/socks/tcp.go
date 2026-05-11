@@ -1,7 +1,6 @@
 package socks
 
 import (
-	"crypto/tls"
 	"errors"
 	"io"
 	"net"
@@ -18,6 +17,8 @@ import (
 	"github.com/metacubex/mihomo/ntp"
 	"github.com/metacubex/mihomo/transport/socks4"
 	"github.com/metacubex/mihomo/transport/socks5"
+
+	"github.com/metacubex/tls"
 )
 
 type Listener struct {

@@ -2,7 +2,6 @@ package route
 
 import (
 	"context"
-	"net/http"
 	"strconv"
 	"time"
 
@@ -12,8 +11,9 @@ import (
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/tunnel"
 
-	"github.com/neishewxn/chi"
-	"github.com/neishewxn/chi/render"
+	"github.com/metacubex/chi"
+	"github.com/metacubex/chi/render"
+	"github.com/metacubex/http"
 )
 
 func groupRouter() http.Handler {

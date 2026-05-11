@@ -18,6 +18,7 @@ import (
 	"github.com/metacubex/mihomo/listener/sing_vmess"
 	"github.com/metacubex/mihomo/listener/socks"
 	"github.com/metacubex/mihomo/listener/tproxy"
+	"github.com/metacubex/mihomo/listener/tuic"
 	LT "github.com/metacubex/mihomo/listener/tunnel"
 	"github.com/metacubex/mihomo/log"
 
@@ -43,6 +44,7 @@ var (
 	tunLister           *sing_tun.Listener
 	shadowSocksListener C.MultiAddrListener
 	vmessListener       *sing_vmess.Listener
+	tuicListener        *tuic.Listener
 
 	// lock for recreate function
 	socksMux   sync.Mutex
@@ -55,8 +57,10 @@ var (
 	tunMux     sync.Mutex
 	ssMux      sync.Mutex
 	vmessMux   sync.Mutex
+	tuicMux    sync.Mutex
 
-	LastTunConf LC.Tun
+	LastTunConf  LC.Tun
+	LastTuicConf LC.TuicServer
 )
 
 type Ports struct {
@@ -74,6 +78,13 @@ func GetTunConf() LC.Tun {
 		return LastTunConf
 	}
 	return tunLister.Config()
+}
+
+func GetTuicConf() LC.TuicServer {
+	if tuicListener == nil {
+		return LC.TuicServer{Enable: false}
+	}
+	return tuicListener.Config()
 }
 
 func AllowLan() bool {
@@ -282,6 +293,7 @@ func ReCreateShadowSocks(shadowSocksConfig string, tunnel C.Tunnel) {
 	for _, addr := range shadowSocksListener.AddrList() {
 		log.Infoln("ShadowSocks proxy listening at: %s", addr.String())
 	}
+	return
 }
 
 func ReCreateVmess(vmessConfig string, tunnel C.Tunnel) {
@@ -333,6 +345,52 @@ func ReCreateVmess(vmessConfig string, tunnel C.Tunnel) {
 	for _, addr := range vmessListener.AddrList() {
 		log.Infoln("Vmess proxy listening at: %s", addr.String())
 	}
+	return
+}
+
+func ReCreateTuic(config LC.TuicServer, tunnel C.Tunnel) {
+	tuicMux.Lock()
+	defer func() {
+		LastTuicConf = config
+		tuicMux.Unlock()
+	}()
+	shouldIgnore := false
+
+	var err error
+	defer func() {
+		if err != nil {
+			log.Errorln("Start Tuic server error: %s", err.Error())
+		}
+	}()
+
+	if tuicListener != nil {
+		if tuicListener.Config().String() != config.String() {
+			tuicListener.Close()
+			tuicListener = nil
+		} else {
+			shouldIgnore = true
+		}
+	}
+
+	if shouldIgnore {
+		return
+	}
+
+	if !config.Enable {
+		return
+	}
+
+	listener, err := tuic.New(config, tunnel)
+	if err != nil {
+		return
+	}
+
+	tuicListener = listener
+
+	for _, addr := range tuicListener.AddrList() {
+		log.Infoln("Tuic proxy listening at: %s", addr.String())
+	}
+	return
 }
 
 func ReCreateTProxy(port int, tunnel C.Tunnel) {

@@ -2,13 +2,14 @@ package vmess
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"net"
 
 	"github.com/metacubex/mihomo/component/ca"
 	"github.com/metacubex/mihomo/component/ech"
 	tlsC "github.com/metacubex/mihomo/component/tls"
+
+	"github.com/metacubex/tls"
 )
 
 type TLSConfig struct {
@@ -23,12 +24,8 @@ type TLSConfig struct {
 	Reality           *tlsC.RealityConfig
 }
 
-type ECHConfig struct {
-	Enable bool
-}
-
-func StreamTLSConn(ctx context.Context, conn net.Conn, cfg *TLSConfig) (net.Conn, error) {
-	tlsConfig, err := ca.GetTLSConfig(ca.Option{
+func (cfg *TLSConfig) ToStdConfig() (*tls.Config, error) {
+	return ca.GetTLSConfig(ca.Option{
 		TLSConfig: &tls.Config{
 			ServerName:         cfg.Host,
 			InsecureSkipVerify: cfg.SkipCertVerify,
@@ -38,6 +35,10 @@ func StreamTLSConn(ctx context.Context, conn net.Conn, cfg *TLSConfig) (net.Conn
 		Certificate: cfg.Certificate,
 		PrivateKey:  cfg.PrivateKey,
 	})
+}
+
+func StreamTLSConn(ctx context.Context, conn net.Conn, cfg *TLSConfig) (net.Conn, error) {
+	tlsConfig, err := cfg.ToStdConfig()
 	if err != nil {
 		return nil, err
 	}

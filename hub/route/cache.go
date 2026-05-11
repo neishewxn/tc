@@ -1,12 +1,11 @@
 package route
 
 import (
-	"net/http"
-
 	"github.com/metacubex/mihomo/component/resolver"
 
-	"github.com/neishewxn/chi"
-	"github.com/neishewxn/chi/render"
+	"github.com/metacubex/chi"
+	"github.com/metacubex/chi/render"
+	"github.com/metacubex/http"
 )
 
 func cacheRouter() http.Handler {

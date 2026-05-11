@@ -17,7 +17,7 @@ import (
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/constant/sniffer"
 
-	"github.com/quic-go/quic-go/quicvarint"
+	"github.com/metacubex/quic-go/quicvarint"
 	"golang.org/x/crypto/hkdf"
 )
 

@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"runtime"
-	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -22,6 +20,7 @@ import (
 	"github.com/metacubex/mihomo/tunnel/statistic"
 
 	"github.com/dlclark/regexp2"
+	"github.com/metacubex/http"
 )
 
 const (
@@ -39,7 +38,7 @@ type providerForApi struct {
 	Proxies          []C.Proxy         `json:"proxies"`
 	TestUrl          string            `json:"testUrl"`
 	ExpectedStatus   string            `json:"expectedStatus"`
-	UpdatedAt        time.Time         `json:"updatedAt"`
+	UpdatedAt        time.Time         `json:"updatedAt,omitempty"`
 	SubscriptionInfo *SubscriptionInfo `json:"subscriptionInfo,omitempty"`
 }
 
@@ -166,8 +165,11 @@ func (pp *proxySetProvider) Initial() error {
 
 func (pp *proxySetProvider) closeAllConnections() {
 	statistic.DefaultManager.Range(func(c statistic.Tracker) bool {
-		if slices.Contains(c.ProviderChains(), pp.Name()) {
-			_ = c.Close()
+		for _, chain := range c.ProviderChains() {
+			if chain == pp.Name() {
+				_ = c.Close()
+				break
+			}
 		}
 		return true
 	})
@@ -345,7 +347,7 @@ func NewProxiesParser(pdName string, filter string, excludeFilter string, exclud
 
 	var excludeFilterRegs []*regexp2.Regexp
 	if excludeFilter != "" {
-		for excludeFilter := range strings.SplitSeq(excludeFilter, "`") {
+		for _, excludeFilter := range strings.Split(excludeFilter, "`") {
 			excludeFilterReg, err := regexp2.Compile(excludeFilter, regexp2.None)
 			if err != nil {
 				return nil, fmt.Errorf("invalid excludeFilter regex: %w", err)
@@ -355,7 +357,7 @@ func NewProxiesParser(pdName string, filter string, excludeFilter string, exclud
 	}
 
 	var filterRegs []*regexp2.Regexp
-	for filter := range strings.SplitSeq(filter, "`") {
+	for _, filter := range strings.Split(filter, "`") {
 		filterReg, err := regexp2.Compile(filter, regexp2.None)
 		if err != nil {
 			return nil, fmt.Errorf("invalid filter regex: %w", err)

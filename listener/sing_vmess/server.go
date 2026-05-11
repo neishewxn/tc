@@ -2,11 +2,8 @@ package sing_vmess
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"net"
-	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/metacubex/mihomo/adapter/inbound"
@@ -20,9 +17,12 @@ import (
 	"github.com/metacubex/mihomo/transport/gun"
 	mihomoVMess "github.com/metacubex/mihomo/transport/vmess"
 
+	"github.com/metacubex/http"
+	"github.com/metacubex/mhurl"
 	vmess "github.com/metacubex/sing-vmess"
 	"github.com/metacubex/sing/common"
 	"github.com/metacubex/sing/common/metadata"
+	"github.com/metacubex/tls"
 )
 
 type Listener struct {
@@ -230,7 +230,7 @@ func HandleVmess(conn net.Conn, tunnel C.Tunnel, additions ...inbound.Addition) 
 }
 
 func ParseVmessURL(s string) (addr, username, password string, err error) {
-	u, err := url.Parse(s)
+	u, err := mhurl.Parse(s) // we need multiple hosts url supports
 	if err != nil {
 		return
 	}

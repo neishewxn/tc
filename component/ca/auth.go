@@ -1,7 +1,7 @@
 package ca
 
 import (
-	"crypto/tls"
+	"github.com/metacubex/tls"
 )
 
 type ClientAuthType = tls.ClientAuthType

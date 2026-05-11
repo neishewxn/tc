@@ -3,8 +3,6 @@ package route
 import (
 	"context"
 	"fmt"
-	"maps"
-	"net/http"
 	"strconv"
 	"time"
 
@@ -14,8 +12,9 @@ import (
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/tunnel"
 
-	"github.com/neishewxn/chi"
-	"github.com/neishewxn/chi/render"
+	"github.com/metacubex/chi"
+	"github.com/metacubex/chi/render"
+	"github.com/metacubex/http"
 )
 
 var (
@@ -166,7 +165,9 @@ func unfixedProxy(w http.ResponseWriter, r *http.Request) {
 // It is left here only to ensure the compatibility of the output of the existing RESTful API.
 func proxiesWithProviders() map[string]C.Proxy {
 	allProxies := make(map[string]C.Proxy)
-	maps.Copy(allProxies, tunnel.Proxies())
+	for name, proxy := range tunnel.Proxies() {
+		allProxies[name] = proxy
+	}
 	for _, p := range tunnel.Providers() {
 		for _, proxy := range p.Proxies() {
 			name := proxy.Name()

@@ -8,7 +8,7 @@ import (
 func TestMapOfLoadOrStoreFn(t *testing.T) {
 	const numEntries = 1000
 	m := NewMap[string, int]()
-	for i := range numEntries {
+	for i := 0; i < numEntries; i++ {
 		v, loaded := m.LoadOrStoreFn(strconv.Itoa(i), func() int {
 			return i
 		})
@@ -19,7 +19,7 @@ func TestMapOfLoadOrStoreFn(t *testing.T) {
 			t.Fatalf("values do not match for %d: %v", i, v)
 		}
 	}
-	for i := range numEntries {
+	for i := 0; i < numEntries; i++ {
 		v, loaded := m.LoadOrStoreFn(strconv.Itoa(i), func() int {
 			return i
 		})

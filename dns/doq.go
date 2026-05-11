@@ -2,7 +2,6 @@ package dns
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -17,8 +16,9 @@ import (
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/log"
 
+	"github.com/metacubex/quic-go"
+	"github.com/metacubex/tls"
 	D "github.com/miekg/dns"
-	"github.com/quic-go/quic-go"
 )
 
 const NextProtoDQ = "doq"
@@ -32,7 +32,10 @@ const (
 	QUICCodeInternalError = quic.ApplicationErrorCode(1)
 	// QUICKeepAlivePeriod is the value that we pass to *quic.Config and that
 	// controls the period with with keep-alive frames are being sent to the
-	// connection.
+	// connection. We set it to 20s as it would be in the quic-go@v0.27.1 with
+	// KeepAlive field set to true This value is specified in
+	// https://pkg.go.dev/github.com/metacubex/quic-go/internal/protocol#MaxKeepAliveInterval.
+	//
 	// TODO(ameshkov):  Consider making it configurable.
 	QUICKeepAlivePeriod = time.Second * 20
 	DefaultTimeout      = time.Second * 5
@@ -276,7 +279,7 @@ func (doq *dnsOverQUIC) openStream(ctx context.Context, conn *quic.Conn) (*quic.
 }
 
 // openConnection opens a new QUIC connection.
-func (doq *dnsOverQUIC) openConnection(ctx context.Context) (conn *quic.Conn, err error) {
+func (doq *dnsOverQUIC) openConnection(ctx context.Context) (quicConn *quic.Conn, err error) {
 	// we're using bootstrapped address instead of what's passed to the function
 	// it does not create an actual connection, but it helps us determine
 	// what IP is actually reachable (when there're v4/v6 addresses).
@@ -295,7 +298,7 @@ func (doq *dnsOverQUIC) openConnection(ctx context.Context) (conn *quic.Conn, er
 
 	p, err := strconv.Atoi(port)
 	udpAddr := net.UDPAddr{IP: net.ParseIP(ip), Port: p}
-	udp, err := doq.dialer.ListenPacket(ctx, "udp", addr)
+	packetConn, err := doq.dialer.ListenPacket(ctx, "udp", addr)
 	if err != nil {
 		return nil, err
 	}
@@ -319,13 +322,16 @@ func (doq *dnsOverQUIC) openConnection(ctx context.Context) (conn *quic.Conn, er
 		return nil, err
 	}
 
-	transport := quic.Transport{Conn: udp}
-	conn, err = transport.Dial(ctx, &udpAddr, tlsConfig, doq.getQUICConfig())
+	transport := quic.Transport{Conn: packetConn}
+	transport.SetCreatedConn(true) // auto close conn
+	transport.SetSingleUse(true)   // auto close transport
+	quicConn, err = transport.Dial(ctx, &udpAddr, tlsConfig, doq.getQUICConfig())
 	if err != nil {
+		_ = packetConn.Close()
 		return nil, fmt.Errorf("opening quic connection to %s: %w", doq.addr, err)
 	}
 
-	return conn, nil
+	return quicConn, nil
 }
 
 // closeConnWithError closes the active connection with error to make sure that

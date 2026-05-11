@@ -3,7 +3,6 @@ package encryption
 import (
 	"crypto/cipher"
 	"crypto/ecdh"
-	"crypto/mlkem"
 	"crypto/rand"
 	"errors"
 	"io"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/metacubex/blake3"
 	"github.com/metacubex/cpu"
+	"github.com/metacubex/mlkem"
 )
 
 var (

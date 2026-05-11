@@ -1,7 +1,6 @@
 package ca
 
 import (
-	"crypto/tls"
 	"crypto/x509"
 	_ "embed"
 	"errors"
@@ -12,6 +11,8 @@ import (
 
 	"github.com/metacubex/mihomo/common/once"
 	"github.com/metacubex/mihomo/ntp"
+
+	"github.com/metacubex/tls"
 )
 
 var globalCertPool *x509.CertPool

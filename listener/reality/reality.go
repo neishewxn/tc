@@ -16,7 +16,7 @@ import (
 	"github.com/metacubex/mihomo/log"
 	"github.com/metacubex/mihomo/ntp"
 
-	utls "github.com/neishewxn/utls"
+	utls "github.com/metacubex/utls"
 )
 
 type Conn = utls.Conn

@@ -7,7 +7,6 @@ import (
 	"net/netip"
 	"net/url"
 	"path/filepath"
-	"slices"
 	"strings"
 	"time"
 	_ "unsafe"
@@ -39,6 +38,8 @@ import (
 	RP "github.com/metacubex/mihomo/rules/provider"
 	RW "github.com/metacubex/mihomo/rules/wrapper"
 	T "github.com/metacubex/mihomo/tunnel"
+
+	"golang.org/x/exp/slices"
 )
 
 // General config
@@ -75,6 +76,7 @@ type Inbound struct {
 	TProxyPort        int            `json:"tproxy-port"`
 	MixedPort         int            `json:"mixed-port"`
 	Tun               LC.Tun         `json:"tun"`
+	TuicServer        LC.TuicServer  `json:"tuic-server"`
 	ShadowSocksConfig string         `json:"ss-config"`
 	VmessConfig       string         `json:"vmess-config"`
 	Authentication    []string       `json:"authentication"`
@@ -131,11 +133,12 @@ type IPTables struct {
 
 // NTP config
 type NTP struct {
-	Enable      bool
-	Server      string
-	Port        int
-	Interval    int
-	DialerProxy string
+	Enable        bool
+	Server        string
+	Port          int
+	Interval      int
+	DialerProxy   string
+	WriteToSystem bool
 }
 
 // DNS config
@@ -253,11 +256,12 @@ type RawClashForAndroid struct {
 }
 
 type RawNTP struct {
-	Enable      bool   `yaml:"enable" json:"enable"`
-	Server      string `yaml:"server" json:"server"`
-	Port        int    `yaml:"port" json:"port"`
-	Interval    int    `yaml:"interval" json:"interval"`
-	DialerProxy string `yaml:"dialer-proxy" json:"dialer-proxy"`
+	Enable        bool   `yaml:"enable" json:"enable"`
+	Server        string `yaml:"server" json:"server"`
+	Port          int    `yaml:"port" json:"port"`
+	Interval      int    `yaml:"interval" json:"interval"`
+	DialerProxy   string `yaml:"dialer-proxy" json:"dialer-proxy"`
+	WriteToSystem bool   `yaml:"write-to-system" json:"write-to-system"`
 }
 
 type RawTun struct {
@@ -298,6 +302,8 @@ type RawTun struct {
 	IncludeAndroidUser                    []int          `yaml:"include-android-user" json:"include-android-user,omitempty"`
 	IncludePackage                        []string       `yaml:"include-package" json:"include-package,omitempty"`
 	ExcludePackage                        []string       `yaml:"exclude-package" json:"exclude-package,omitempty"`
+	IncludeMACAddress                     []string       `yaml:"include-mac-address" json:"include-mac-address,omitempty"`
+	ExcludeMACAddress                     []string       `yaml:"exclude-mac-address" json:"exclude-mac-address,omitempty"`
 	EndpointIndependentNat                bool           `yaml:"endpoint-independent-nat" json:"endpoint-independent-nat,omitempty"`
 	UDPTimeout                            int64          `yaml:"udp-timeout" json:"udp-timeout,omitempty"`
 	DisableICMPForwarding                 bool           `yaml:"disable-icmp-forwarding" json:"disable-icmp-forwarding,omitempty"`
@@ -517,10 +523,11 @@ func DefaultRawConfig() *RawConfig {
 			FakeIPFilterMode: C.FilterBlackList,
 		},
 		NTP: RawNTP{
-			Enable:   false,
-			Server:   "time.apple.com",
-			Port:     123,
-			Interval: 30,
+			Enable:        false,
+			WriteToSystem: false,
+			Server:        "time.apple.com",
+			Port:          123,
+			Interval:      30,
 		},
 		Tun: RawTun{
 			Enable:              false,
@@ -700,6 +707,11 @@ func ParseRawConfig(rawCfg *RawConfig) (*Config, error) {
 		return nil, err
 	}
 
+	err = parseTuicServer(rawCfg.TuicServer, config.General)
+	if err != nil {
+		return nil, err
+	}
+
 	config.Users = parseAuthentication(rawCfg.Authentication)
 
 	config.Tunnels = rawCfg.Tunnels
@@ -815,11 +827,12 @@ func parseIPTables(cfg *RawConfig) (*IPTables, error) {
 
 func parseNTP(cfg *RawConfig) (*NTP, error) {
 	return &NTP{
-		Enable:      cfg.NTP.Enable,
-		Server:      cfg.NTP.Server,
-		Port:        cfg.NTP.Port,
-		Interval:    cfg.NTP.Interval,
-		DialerProxy: cfg.NTP.DialerProxy,
+		Enable:        cfg.NTP.Enable,
+		Server:        cfg.NTP.Server,
+		Port:          cfg.NTP.Port,
+		Interval:      cfg.NTP.Interval,
+		DialerProxy:   cfg.NTP.DialerProxy,
+		WriteToSystem: cfg.NTP.WriteToSystem,
 	}, nil
 }
 
@@ -1026,7 +1039,12 @@ func verifySubRule(subRules map[string][]C.Rule) error {
 
 func verifySubRuleCircularReferences(n string, subRules map[string][]C.Rule, arr []string) error {
 	isInArray := func(v string, array []string) bool {
-		return slices.Contains(array, v)
+		for _, c := range array {
+			if v == c {
+				return true
+			}
+		}
+		return false
 	}
 
 	arr = append(arr, n)
@@ -1163,7 +1181,7 @@ func parseNameServer(servers []string, respectRules bool, preferH3 bool) ([]dns.
 
 		var proxyName string
 		params := map[string]string{}
-		for s := range strings.SplitSeq(u.Fragment, "&") {
+		for _, s := range strings.Split(u.Fragment, "&") {
 			arr := strings.SplitN(s, "=", 2)
 			switch len(arr) {
 			case 1:
@@ -1308,8 +1326,8 @@ func parseNameServerPolicy(nsPolicy *orderedmap.OrderedMap[string, any], rulePro
 					policy = append(policy, dns.Policy{Domain: newKey, NameServers: nameservers})
 				}
 			} else {
-				subkeys := strings.SplitSeq(k, ",")
-				for subkey := range subkeys {
+				subkeys := strings.Split(k, ",")
+				for _, subkey := range subkeys {
 					policy = append(policy, dns.Policy{Domain: subkey, NameServers: nameservers})
 				}
 			}
@@ -1664,6 +1682,8 @@ func parseTun(rawTun RawTun, dns *DNS, general *General) error {
 		IncludeAndroidUser:                    rawTun.IncludeAndroidUser,
 		IncludePackage:                        rawTun.IncludePackage,
 		ExcludePackage:                        rawTun.ExcludePackage,
+		IncludeMACAddress:                     rawTun.IncludeMACAddress,
+		ExcludeMACAddress:                     rawTun.ExcludeMACAddress,
 		EndpointIndependentNat:                rawTun.EndpointIndependentNat,
 		UDPTimeout:                            rawTun.UDPTimeout,
 		DisableICMPForwarding:                 rawTun.DisableICMPForwarding,
@@ -1678,6 +1698,24 @@ func parseTun(rawTun RawTun, dns *DNS, general *General) error {
 		SendMsgX: rawTun.SendMsgX,
 	}
 
+	return nil
+}
+
+func parseTuicServer(rawTuic RawTuicServer, general *General) error {
+	general.TuicServer = LC.TuicServer{
+		Enable:                rawTuic.Enable,
+		Listen:                rawTuic.Listen,
+		Token:                 rawTuic.Token,
+		Users:                 rawTuic.Users,
+		Certificate:           rawTuic.Certificate,
+		PrivateKey:            rawTuic.PrivateKey,
+		CongestionController:  rawTuic.CongestionController,
+		MaxIdleTime:           rawTuic.MaxIdleTime,
+		AuthenticationTimeout: rawTuic.AuthenticationTimeout,
+		ALPN:                  rawTuic.ALPN,
+		MaxUdpRelayPacketSize: rawTuic.MaxUdpRelayPacketSize,
+		CWND:                  rawTuic.CWND,
+	}
 	return nil
 }
 

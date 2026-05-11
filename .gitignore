@@ -26,3 +26,10 @@ test/config/cache*
 /output
 .vscode/
 .fleet/
+
+# Local toolchains
+/go1.*/
+go*.linux-*.tar.gz
+
+# Claude local state
+.claude/

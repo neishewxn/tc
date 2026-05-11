@@ -1,7 +1,6 @@
 package http
 
 import (
-	"crypto/tls"
 	"errors"
 	"net"
 
@@ -13,6 +12,8 @@ import (
 	LC "github.com/metacubex/mihomo/listener/config"
 	"github.com/metacubex/mihomo/listener/reality"
 	"github.com/metacubex/mihomo/ntp"
+
+	"github.com/metacubex/tls"
 )
 
 type Listener struct {

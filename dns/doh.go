@@ -2,16 +2,13 @@ package dns
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
 	"net"
-	"net/http"
 	"net/url"
 	"runtime"
-	"slices"
 	"strconv"
 	"sync"
 	"time"
@@ -19,11 +16,13 @@ import (
 	"github.com/metacubex/mihomo/component/ca"
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/log"
-	"golang.org/x/net/http2"
 
+	"github.com/metacubex/http"
+	"github.com/metacubex/quic-go"
+	"github.com/metacubex/quic-go/http3"
+	"github.com/metacubex/tls"
 	D "github.com/miekg/dns"
-	"github.com/quic-go/quic-go"
-	"github.com/quic-go/quic-go/http3"
+	"golang.org/x/exp/slices"
 )
 
 // Values to configure HTTP and HTTP/2 transport.
@@ -438,8 +437,8 @@ func (doh *dnsOverHTTPS) createTransport(ctx context.Context) (t http.RoundTripp
 	// Explicitly configure transport to use HTTP/2.
 	//
 	// See https://github.com/AdguardTeam/dnsproxy/issues/11.
-	var transportH2 *http2.Transport
-	transportH2, err = http2.ConfigureTransports(transport)
+	var transportH2 *http.Http2Transport
+	transportH2, err = http.Http2ConfigureTransports(transport)
 	if err != nil {
 		return nil, err
 	}
@@ -555,11 +554,13 @@ func (doh *dnsOverHTTPS) dialQuic(ctx context.Context, addr string, tlsCfg *tls.
 		IP:   net.ParseIP(ip),
 		Port: portInt,
 	}
-	conn, err := doh.dialer.ListenPacket(ctx, "udp", addr)
+	packetConn, err := doh.dialer.ListenPacket(ctx, "udp", addr)
 	if err != nil {
 		return nil, err
 	}
-	transport := quic.Transport{Conn: conn}
+	transport := quic.Transport{Conn: packetConn}
+	transport.SetCreatedConn(true) // auto close conn
+	transport.SetSingleUse(true)   // auto close transport
 	tlsCfg = tlsCfg.Clone()
 	if host, _, err := net.SplitHostPort(doh.url.Host); err == nil {
 		tlsCfg.ServerName = host
@@ -567,7 +568,12 @@ func (doh *dnsOverHTTPS) dialQuic(ctx context.Context, addr string, tlsCfg *tls.
 		// It's ok if net.SplitHostPort returns an error - it could be a hostname/IP address without a port.
 		tlsCfg.ServerName = doh.url.Host
 	}
-	return transport.DialEarly(ctx, &udpAddr, tlsCfg, cfg)
+	quicConn, err := transport.DialEarly(ctx, &udpAddr, tlsCfg, cfg)
+	if err != nil {
+		_ = packetConn.Close()
+		return nil, err
+	}
+	return quicConn, nil
 }
 
 // probeH3 runs a test to check whether QUIC is faster than TLS for this
@@ -647,7 +653,7 @@ func (doh *dnsOverHTTPS) probeQUIC(ctx context.Context, addr string, tlsConfig *
 
 	ch <- nil
 
-	elapsed := time.Since(startTime)
+	elapsed := time.Now().Sub(startTime)
 	log.Debugln("elapsed on establishing a QUIC connection: %s", elapsed)
 }
 
@@ -667,13 +673,19 @@ func (doh *dnsOverHTTPS) probeTLS(ctx context.Context, tlsConfig *tls.Config, ch
 
 	ch <- nil
 
-	elapsed := time.Since(startTime)
+	elapsed := time.Now().Sub(startTime)
 	log.Debugln("elapsed on establishing a TLS connection: %s", elapsed)
 }
 
 // supportsH3 returns true if HTTP/3 is supported by this upstream.
 func (doh *dnsOverHTTPS) supportsH3() (ok bool) {
-	return slices.Contains(doh.supportedHTTPVersions(), C.HTTPVersion3)
+	for _, v := range doh.supportedHTTPVersions() {
+		if v == C.HTTPVersion3 {
+			return true
+		}
+	}
+
+	return false
 }
 
 // supportsHTTP returns true if HTTP/1.1 or HTTP2 is supported by this upstream.
